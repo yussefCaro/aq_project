@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>tasks</title>
+</head>
+{% extends 'layouts\base.html' %}
+{% block content %}
+<body>
+
+    <h1>Tasks Page</h1>
+
+    {% for task in tasks %}
+       <div>
+           <h2>{{task.title}}</h2>
+           {% if task.done %}
+               <p>✅ tarea realizada</p>
+           {% else %}
+               <p>❌ Tarea pendiente  </p>
+           {% endif %}
+
+           <p>{{task.description}}</p>
+           <p>{{task.project.name}}</p>
+           <button>Delete</button>
+           <button>✅ done </button>
+
+       </div>
+    {% endfor %}
+
+</body>
+    {% endblock %}
+</html>
