@@ -19,11 +19,11 @@
     <li><a href="{% url 'tasks' %}">Tasks</a></li>
     <li><a href="{% url 'create_task' %}">crear lista de check</a></li>
     <li><a href="{% url 'create_project' %}">Create Project</a></li>
-
+      <li><a href="{% url 'signup' %}">Sign up</a></li>
       {% if user.is_authenticated %}
-        <li><a href="{% url 'logout' %}">Logout</a></li>
+          <li><a href="{% url 'logout' %}">Logout</a></li>
       {% else %}
-        <li><a href="{% url 'signup' %}">Sign up</a></li>
+          <li><a href="{% url 'login' %}">Login</a></li>
       {% endif %}
 
   </ul>

@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>signup</title>
+    <title>signin</title>
 </head>
 {% extends 'layouts\base.html' %}
 {% block content %}
@@ -14,9 +14,8 @@
 <main class="container">
     <div class="row">
         <div class="col-md-4 offset-md-4 mt-5">
-            <form method="post" class="card card-body">
-
-            <h1 class="text-center">Sing up</h1>
+            <form action="/signin/" method="post" class="card card-body" >
+                <h1 class="text-center">Sing in</h1>
 
                 {{error}}
 
@@ -28,25 +27,20 @@
                 </div>
 
                 <div class= "mb-3">
-                    <label for="password1" class="form-label">password</label>
-                    <input type="password" name="password1" id="password1" class="form-control" placeholder="Escribe tu nombre de contraseña">
+                    <label for="password" class="form-label">password</label>
+                    <input type="password" name="password" id="password" class="form-control" placeholder="Escribe tu nombre de contraseña">
                 </div>
-
-                <div class= "mb-3">
-                    <label for="password2" class="form-label">Confirm your password </label>
-                    <input type="password" name="password2" id="password2" class="form-control" placeholder="confirmar contraseña">
-                </div>
-
-
 
                 <button class="btn btn-primary">
                     Enviar
                 </button>
             </form>
-
         </div>
+
     </div>
 </main>
+
+
 
 </body>
 {% endblock %}
