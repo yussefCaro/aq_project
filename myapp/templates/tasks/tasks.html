@@ -1,35 +1,48 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>tasks</title>
+    <title>Tasks</title>
 </head>
-{% extends 'layouts\base.html' %}
-{% block content %}
+{%extends 'layouts\base.html' %}
+{%block content%}
 <body>
 
-    <h1>Tasks Page</h1>
+<main class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3 mt-3">
+            <form action="/tasks/" method="post" class="card card-body" >
+                <h1 class="text-center">Tasks pending</h1>
 
-    {% for task in tasks %}
-       <div>
-           <h2>{{task.title}}</h2>
-           {% if task.done %}
-               <p>✅ tarea realizada</p>
-           {% else %}
-               <p>❌ Tarea pendiente  </p>
-           {% endif %}
+                <ul class="list-group">
+                    {% for task in tasks %}
+                    <li class ="list-group-item">
+                        <a class="list-group-item" href="{% url 'task_detail' task.id %}">
+                            <header class="d-flex justify-content-between">
+                                {% if task.important %}
+                                <strong class="fw-bold text-success">{{task.title}} </strong>
+                                <p>{{task.user.username}}</p>
+                                {% else %}
+                                {{task.title}}
+                                {% endif %}
 
-           <p>{{task.description}}</p>
-           <p>{{task.project.name}}</p>
-           <button>Delete</button>
-           <button>✅ done </button>
+                            </header>
 
-       </div>
-    {% endfor %}
+                            <p>{{task.description}}</p>
+
+                            <p>{{task.datecompleted|date:"M j Y"}}></p>
+
+                        </a>
+
+                    </li>
+                    {%endfor%}
+                </ul>
+            </form>
+        </div>
+    </div>
+</main>
+
 
 </body>
-    {% endblock %}
+{%endblock%}
 </html>

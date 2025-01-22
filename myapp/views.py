@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from myapp.models import Project, Task
 from .forms import CreateNewProject, TaskForm
+from .models import Task
 
 
 # Create your views here.
@@ -26,7 +27,8 @@ def projects(request):
 
 
 def tasks(request):
-    tasks = Task.objects.all()
+    tasks = Task.objects.filter(user=request.user, datecompleted__isnull=True)
+
     return render(request, 'tasks/tasks.html', {
         'tasks': tasks
     })
@@ -48,6 +50,28 @@ def create_task(request):
             return render(request, 'tasks/create_task.html', {
                 'form': TaskForm,
                 'error': 'Bad data passed in'
+            })
+
+
+def task_detail(request, task_id):
+    if request.method == 'GET':
+        task = get_object_or_404(Task, pk=task_id, user=request.user)
+        form = TaskForm(instance=task)
+        return render(request, 'task_detail.html', {
+            'task': task,
+            'form': form
+        })
+    else:
+        try:
+            task = get_object_or_404(Task, pk=task_id, user=request.user)
+            form = TaskForm(request.POST, instance=task)
+            form.save()
+            return redirect('tasks')
+        except ValueError:
+            return render(request, 'task_detail.html', {
+                'task': task,
+                'form': form,
+                'error': 'Error updating task'
             })
 
 
