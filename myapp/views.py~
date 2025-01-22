@@ -41,7 +41,7 @@ def create_task(request):
         try:
             form = TaskForm(request.POST)
             new_task = form.save(commit=False)
-            new_task.user = request.user
+            new_task.owner = request.user
             form.save()
             return redirect('tasks')
         except ValueError:  # validation error
