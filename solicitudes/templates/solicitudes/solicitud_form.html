@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>Solicitud de Servicio</title>
+</head>
+{% extends 'layouts/base.html' %}
+{% block content %}
+
+<body>
+
+<main class="container">
+    <div class="row">
+        <div class="col-md-4 offset-md-4 mt-5">
+
+            <h2>Solicitud de Auditoría</h2>
+
+            <!-- Mostrar errores del formulario -->
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <button class="btn btn-dark" type="submit">
+                    Enviar Solicitud
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+</main>
+
+</body>
+{% endblock %}
+</html>
