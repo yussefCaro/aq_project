@@ -9,20 +9,24 @@
 </head>
 {% extends 'layouts\base.html' %}
 {% block content %}
+
 <body>
 
-    <h1>Create a new Project</h1>
-
-    <form action="" method="post">
-        {% csrf_token %}
-        {{form.as_p}}
-        <button>
-            Save
-        </button>
-    </form>
-
-
-
+    <main class="container">
+        <div class="row">
+            <div class="col-md-4 offset-md-4 mt-5">
+                <form action="" method="post" class="card card-body">
+                    <h1>Create a new project</h1>
+                    {{error}}
+                    {% csrf_token %}
+                    {{form.as_p}}
+                    <button class="btn btn-dark">
+                        Save
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
 
 </body>
 {% endblock %}

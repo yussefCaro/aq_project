@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Task
+from .models import Task, Project
 
 
 class TaskForm (forms.ModelForm):
@@ -14,6 +14,10 @@ class TaskForm (forms.ModelForm):
         }
 
 
-class CreateNewProject(forms.Form):
-    name = forms.CharField(label="Crear un nuevo Proyecto", max_length=100,
-                           widget=forms.TextInput(attrs={'class': 'input'}))
+class CreateNewProject(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del proyecto'}),
+        }

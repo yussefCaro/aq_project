@@ -21,7 +21,7 @@ def about(request):
 
 @login_required
 def projects(request):
-    projects = Project.objects.filter(user=request.user)
+    projects = Project.objects.filter(user=request.user).order_by('created_at')
     return render(request, 'projects/projects.html', {
         'projects': projects
     })

@@ -11,16 +11,22 @@
 {% block content %}
 <body>
 
-    <h1>{{project.name}}</h1>
-
-    {% for task in tasks %}
-       <div class="card">
-
-          <h2>{{task.title}}</h2>
-
-
-       </div>
-    {% endfor %}
+    <main class="container">
+        <div class="row">
+            <div class="col-md-4 offset-md-4 mt-5">
+                <h1 class="text-secondary">{{project.name}}</h1>
+                <ul class="list-group">
+                    {% for task in tasks %}
+                        <li class="list-group-item">
+                            <a class="list-group-item" href="{% url 'task_detail' task.id %}">
+                                {{task.title}}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </main>
 </body>
 {% endblock %}
 </html>
