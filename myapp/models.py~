@@ -4,29 +4,22 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class Project(models.Model):
+    objects = None
     name = models.CharField(max_length=100)
+
     def __str__(self):
-        return str (self.name)
+        return str(self.name)
 
 
 class Task(models.Model):
+    objects = None
     title = models.CharField(max_length=100)
-<<<<<<< HEAD
     description = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     datecompleted = models.DateTimeField(null=True, blank=True)
     important = models.BooleanField(default=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-=======
-    description = models.CharField(max_length=250,  blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    datecompleted = models.DateTimeField (null =True)
-    important = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE )
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    
->>>>>>> 3625e58e6e212605b0e664ab6d022627585a857f
 
     def __str__(self):
         return self.title + ' - by ' + self.user.username

@@ -13,12 +13,25 @@
 
 {%block content%}
 <body>
+<main class="container py-5">
+    <section class="card card-body">
+        <h1>Django</h1>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
 
-    <h1>{{title}}</h1>
+        <div class="text-center">
+            <a class="btn btn-secondary" href="{% url 'signin' %}">
+                Sign in
+            </a>
 
-    <img src="{% static 'img/imagen.jpeg' %}" alt="CC logo" width="70">
+            <a class="btn btn-dark" href="{% url 'signup' %}">
+                Sign up
+            </a>
+        </div>
 
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+    </section>
+</main>
+
+
 
 </body>
 {%endblock%}
