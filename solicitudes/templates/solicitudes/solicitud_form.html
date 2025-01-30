@@ -2,9 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1">
-    <title>Solicitud de Servicio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Consulta de Cliente por NIT</title>
 </head>
 {% extends 'layouts/base.html' %}
 {% block content %}
@@ -15,9 +14,9 @@
     <div class="row">
         <div class="col-md-4 offset-md-4 mt-5">
 
-            <h2>Solicitud de Auditoría</h2>
+            <h2>Consulta por NIT</h2>
 
-            <!-- Mostrar errores del formulario -->
+            <!-- Mostrar errores si existen -->
             {% if form.errors %}
                 <div class="alert alert-danger">
                     <ul>
@@ -30,12 +29,15 @@
                 </div>
             {% endif %}
 
+            <!-- Formulario solo con el campo NIT -->
             <form method="POST">
                 {% csrf_token %}
-                {{ form.as_p }}
 
-                <button class="btn btn-dark" type="submit">
-                    Enviar Solicitud
+                <label for="id_nit">NIT:</label>
+                <input type="text" name="nit" id="id_nit" class="form-control" placeholder="Ingrese el NIT" required>
+
+                <button class="btn btn-dark mt-3" type="submit">
+                    Consultar Cliente
                 </button>
             </form>
 
@@ -46,4 +48,4 @@
 
 </body>
 {% endblock %}
-</html>
+

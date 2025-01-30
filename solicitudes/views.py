@@ -12,36 +12,53 @@ import datetime
 
 def solicitud(request):
     if request.method == "POST":
-        nit = request.POST.get('nit')
+        nit = request.POST.get('nit')  # Obtener el NIT ingresado
         cliente = Cliente.objects.filter(nit=nit).first()
 
         if cliente:
-            # Si el cliente existe, editar los datos
-            if request.POST.get('editar_datos'):
-                cliente.nombre_establecimiento = request.POST.get('nombre_establecimiento')
-                cliente.telefono_celular = request.POST.get('telefono_celular')
-                cliente.save()
-
-            # Redirigir a la vista del PDF con el ID del cliente
-            return redirect('generar_solicitud_pdf', cliente_id=cliente.id)
-
+            # Si el cliente existe, redirigir a la vista de detalles
+            return redirect('ver_cliente', cliente_id=cliente.id)
         else:
-            # Si el cliente no existe, crear uno nuevo
-            form = ClienteForm(request.POST)
-            if form.is_valid():
-                nuevo_cliente = form.save()
-                # Redirigir a la vista del PDF con el ID del nuevo cliente
-                return redirect('generar_solicitud_pdf', cliente_id=nuevo_cliente.id)
-            else:
-                # Si el formulario no es válido, mostrar el formulario con errores
-                return render(request, 'solicitudes/solicitud_form.html', {'form': form})
+            # Si el cliente no existe, redirigir a la vista de creación
+            return redirect('crear_cliente', nit=nit)  # Redirige a crear nuevo cliente
 
+    # Mostrar el formulario vacío solo con el campo NIT
+    return render(request, 'solicitudes/solicitud_form.html')
+
+
+
+def ver_cliente(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+
+    # Si se quiere permitir la edición, puedes agregar un formulario aquí.
+    # Por ahora solo mostrar los datos:
+
+    return render(request, 'solicitudes/ver_cliente.html', {'cliente': cliente})
+
+def crear_cliente(request, nit):
+    if request.method == "POST":
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            nuevo_cliente = form.save()
+            return redirect('ver_cliente', cliente_id=nuevo_cliente.id)
     else:
-        # Si el método no es POST, renderizar el formulario vacío
-        form = ClienteForm()
-        return render(request, 'solicitudes/solicitud_form.html', {'form': form})
+        form = ClienteForm(initial={'nit': nit})  # Prellenar con el NIT ingresado
+
+    return render(request, 'solicitudes/crear_cliente.html', {'form': form})
 
 
+def editar_cliente(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+
+    if request.method == "POST":
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            return redirect('ver_cliente', cliente_id=cliente.id)
+    else:
+        form = ClienteForm(instance=cliente)
+
+    return render(request, 'solicitudes/editar_cliente.html', {'form': form, 'cliente': cliente})
 
 
 

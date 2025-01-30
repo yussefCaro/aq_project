@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Detalles del Cliente</title>
+</head>
+<body>
+
+<h2>Detalles del Cliente</h2>
+
+<p><strong>NIT:</strong> {{ cliente.nit }}</p>
+<p><strong>Nombre del Propietario:</strong> {{ cliente.nombre_propietario }}</p>
+<p><strong>Establecimiento Comercial:</strong> {{ cliente.nombre_establecimiento }}</p>
+<p><strong>Representante Legal:</strong> {{ cliente.representante_legal }}</p>
+<p><strong>Ciudad:</strong> {{ cliente.ciudad }}</p>
+<p><strong>Departamento:</strong> {{ cliente.departamento }}</p>
+<p><strong>Teléfono:</strong> {{ cliente.telefono_celular }}</p>
+
+<!-- Aquí puedes agregar un formulario para editar los datos si lo deseas -->
+
+<a href="{% url 'editar_cliente' cliente.id %}">Editar Cliente</a>
+
+</body>
+</html>
