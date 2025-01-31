@@ -20,6 +20,9 @@
 <!-- Aquí puedes agregar un formulario para editar los datos si lo deseas -->
 
 <a href="{% url 'editar_cliente' cliente.id %}">Editar Cliente</a>
+<!-- Botón para enviar solicitud y ver el PDF -->
+<a href="{% url 'generar_solicitud_pdf' cliente.id %}" class="btn btn-primary mt-3">Enviar Solicitud</a>
+
 
 </body>
 </html>

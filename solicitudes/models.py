@@ -21,8 +21,13 @@ class Cliente(models.Model):
     certificado_conformidad = models.CharField(max_length=100, choices=[('si', 'Sí'), ('no', 'No')])
     nombre_ente_certificador = models.CharField(max_length=100, blank=True, null=True)
 
+
     def __str__(self):
         return self.nombre_establecimiento
+
+
+
+
 
 
 

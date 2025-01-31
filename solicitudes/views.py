@@ -8,6 +8,8 @@ from reportlab.pdfgen import canvas
 from .forms import SolicitudForm
 from django.urls import reverse
 import datetime
+from django.template.loader import get_template
+import pdfkit
 
 
 def solicitud(request):
@@ -62,6 +64,8 @@ def editar_cliente(request, cliente_id):
 
 
 
+
+
 def generar_solicitud_pdf(request, cliente_id):
     # Obtener los datos del cliente por el ID
     cliente = get_object_or_404(Cliente, id=cliente_id)
@@ -90,4 +94,3 @@ def generar_solicitud_pdf(request, cliente_id):
     pdf.save()
 
     return response
-
