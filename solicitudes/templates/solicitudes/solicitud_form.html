@@ -6,14 +6,11 @@
     <title>Consulta de Cliente por NIT</title>
 </head>
 {% extends 'layouts/base.html' %}
+
 {% block content %}
-
-<body>
-
 <main class="container">
     <div class="row">
-        <div class="col-md-4 offset-md-4 mt-5">
-
+        <div class="col-md-6 offset-md-3 mt-5">
             <h2>Consulta por NIT</h2>
 
             <!-- Mostrar errores si existen -->
@@ -29,23 +26,22 @@
                 </div>
             {% endif %}
 
-            <!-- Formulario solo con el campo NIT -->
             <form method="POST">
                 {% csrf_token %}
 
                 <label for="id_nit">NIT:</label>
                 <input type="text" name="nit" id="id_nit" class="form-control" placeholder="Ingrese el NIT" required>
 
+                <!-- Campo de fecha -->
+                <label for="id_fecha_solicitud">Fecha de Solicitud:</label>
+                {{ form.fecha_solicitud }}
+
                 <button class="btn btn-dark mt-3" type="submit">
                     Consultar Cliente
                 </button>
             </form>
-
         </div>
     </div>
-
 </main>
-
-</body>
 {% endblock %}
 

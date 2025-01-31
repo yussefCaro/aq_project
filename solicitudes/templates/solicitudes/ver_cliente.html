@@ -1,28 +1,61 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Detalles del Cliente</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
+<body class="container mt-4">
 
-<h2>Detalles del Cliente</h2>
+    <h2 class="text-primary">Detalles del Cliente</h2>
 
-<p><strong>NIT:</strong> {{ cliente.nit }}</p>
-<p><strong>Nombre del Propietario:</strong> {{ cliente.nombre_propietario }}</p>
-<p><strong>Establecimiento Comercial:</strong> {{ cliente.nombre_establecimiento }}</p>
-<p><strong>Representante Legal:</strong> {{ cliente.representante_legal }}</p>
-<p><strong>Ciudad:</strong> {{ cliente.ciudad }}</p>
-<p><strong>Departamento:</strong> {{ cliente.departamento }}</p>
-<p><strong>Teléfono:</strong> {{ cliente.telefono_celular }}</p>
+    <table class="table table-bordered">
+        <tr>
+            <th>NIT</th>
+            <td>{{ cliente.nit }}</td>
+        </tr>
+        <tr>
+            <th>Nombre del Propietario</th>
+            <td>{{ cliente.nombre_propietario }}</td>
+        </tr>
+        <tr>
+            <th>Establecimiento Comercial</th>
+            <td>{{ cliente.nombre_establecimiento }}</td>
+        </tr>
+        <tr>
+            <th>Representante Legal</th>
+            <td>{{ cliente.representante_legal }}</td>
+        </tr>
+        <tr>
+            <th>Ciudad</th>
+            <td>{{ cliente.ciudad }}</td>
+        </tr>
+        <tr>
+            <th>Departamento</th>
+            <td>{{ cliente.departamento }}</td>
+        </tr>
+        <tr>
+            <th>Teléfono</th>
+            <td>{{ cliente.telefono_celular }}</td>
+        </tr>
+    </table>
 
-<!-- Aquí puedes agregar un formulario para editar los datos si lo deseas -->
+    <div class="mt-3">
+        <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-warning">Editar Cliente</a>
 
-<a href="{% url 'editar_cliente' cliente.id %}">Editar Cliente</a>
-<!-- Botón para enviar solicitud y ver el PDF -->
-<a href="{% url 'generar_solicitud_pdf' cliente.id %}" class="btn btn-primary mt-3">Enviar Solicitud</a>
+        {% if not cliente.fecha_solicitud %}
+            <form action="{% url 'enviar_solicitud' cliente.id %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Enviar Solicitud</button>
+            </form>
+        {% else %}
+            <p class="text-success mt-2">Solicitud enviada el: <strong>{{ cliente.fecha_solicitud }}</strong></p>
+            <a href="{% url 'generar_solicitud_pdf' cliente.id %}" class="btn btn-primary">Descargar PDF</a>
+            <a href="{% url 'enviar_solicitud' cliente.id %}">Enviar Solicitud</a>
+        {% endif %}
+    </div>
 
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
