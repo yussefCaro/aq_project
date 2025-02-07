@@ -17,8 +17,8 @@ class Cliente(models.Model):
     telefono_celular = models.CharField(max_length=20)
     correo_electronico = models.EmailField()
     nivel_cea = models.CharField(max_length=50)
-    cantidad_vehiculos = models.IntegerField()
-    cantidad_instructores = models.IntegerField()
+    cantidad_vehiculos = models.IntegerField(null=True, blank=True)
+    cantidad_instructores = models.IntegerField(null=True, blank=True)
     certificado_conformidad = models.CharField(max_length=100, choices=[('si', 'Sí'), ('no', 'No')])
     nombre_ente_certificador = models.CharField(max_length=100, blank=True, null=True)
     fecha_solicitud = models.DateField(null=True, blank=True)  # Se establece solo cuando se envía la solicitud
@@ -34,6 +34,14 @@ class Cliente(models.Model):
 
 
 
+# Modelo Solicitud
+class Solicitud(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)  # Relación con el modelo Cliente
+    fecha_solicitud = models.DateField(default=date.today)  # Fecha en que se crea la solicitud
+    estado = models.CharField(max_length=20, choices=[('Pendiente', 'Pendiente'), ('Aprobada', 'Aprobada'), ('Rechazada', 'Rechazada')], default='Pendiente')  # Estado de la solicitud
+
+    def __str__(self):
+        return f"Solicitud para {self.cliente.nombre_establecimiento} - {self.estado}"
 
 
 

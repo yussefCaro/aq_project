@@ -5,6 +5,8 @@ from .models import Cliente
 from .forms import ClienteForm, SolicitudForm
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from datetime import date
+
 
 # Vista para manejar el formulario de solicitud
 def solicitud(request):
@@ -22,14 +24,22 @@ def solicitud(request):
 
 # Vista para enviar la solicitud con fecha
 def enviar_solicitud(request, cliente_id):
-    cliente = get_object_or_404(Cliente, id=cliente_id)
+    cliente = get_object_or_404(Cliente, id=cliente_id)  # Asegura que el cliente existe
 
-    if request.method == "POST":
+    if request.method == 'POST':
         form = SolicitudForm(request.POST)
         if form.is_valid():
-            cliente.fecha_solicitud = form.cleaned_data['fecha_solicitud']
-            cliente.save()
-            return redirect('ver_cliente', cliente_id=cliente.id)
+            nueva_solicitud = form.save(commit=False)
+            nueva_solicitud.cliente = cliente  # Asignar cliente
+            nueva_solicitud.fecha_solicitud = date.today()
+            nueva_solicitud.estado = 'Pendiente'
+            print("Nueva solicitud:", nueva_solicitud)  # Verifica los datos antes de guardar
+            nueva_solicitud.save()
+            return redirect('listado_solicitudes')
+        else:
+            print("Errores en el formulario:", form.errors)  # Se imprime si el formulario no es válido
+
+
     else:
         form = SolicitudForm(initial={'fecha_solicitud': date.today()})
 
@@ -76,6 +86,10 @@ def editar_cliente(request, cliente_id):
 
 
 # Generación de PDF con datos del cliente
+from django.contrib.auth.decorators import permission_required, login_required
+
+
+
 def generar_solicitud_pdf(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
 
@@ -107,3 +121,43 @@ def generar_solicitud_pdf(request, cliente_id):
     pdf.save()
 
     return response
+
+from django.contrib.auth.decorators import permission_required
+
+@login_required
+def solicitudes_view(request):
+    solicitudes = Solicitud.objects.all()
+    return render(request, 'programacion/solicitudes_list.html', {'solicitudes': solicitudes})
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Solicitud
+from django.contrib.auth.decorators import login_required, permission_required
+
+from django.http import HttpResponse
+
+@login_required
+
+def listado_solicitudes(request):
+    # Verificar permisos del usuario en la consola
+    print("Permisos del usuario:", request.user.get_all_permissions())
+
+    if not request.user.has_perm('solicitudes.change_solicitud'):
+        return HttpResponse("No tienes permiso para ver esta página", status=403)
+
+    solicitudes = Solicitud.objects.filter(estado='Pendiente')  # Solo las Pendientes
+
+    if request.method == "POST":
+        # Lógica para cambiar el estado
+        solicitud_id = request.POST.get('solicitud_id')
+        nuevo_estado = request.POST.get('estado')
+        solicitud = get_object_or_404(Solicitud, id=solicitud_id)
+
+        # Cambiar el estado solo si está permitido
+        if nuevo_estado in ['Aprobada', 'Rechazada', 'Programada']:  # Asegurarse de que el estado sea válido
+            solicitud.estado = nuevo_estado
+            solicitud.save()
+            return redirect('listado_solicitudes')
+
+    return render(request, 'programacion/listado.html', {'solicitudes': solicitudes})
+

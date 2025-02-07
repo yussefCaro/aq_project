@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente
+from .models import Cliente, Solicitud
 from django.core.exceptions import ValidationError
 from datetime import date
 
@@ -22,7 +22,7 @@ class SolicitudForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Cliente
+        model = Solicitud
         fields = ['fecha_solicitud']
 
     def clean_fecha_solicitud(self):
