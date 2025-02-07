@@ -1,43 +1,71 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Document</title>
+    <title>Listado de Solicitudes</title>
 </head>
+
 {% extends 'layouts/base.html' %}
 
 {% block content %}
 <body>
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Cliente</th>
-            <th>Estado</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for solicitud in solicitudes %}
-        <tr>
-            <td>{{ solicitud.id }}</td>
-            <td>{{ solicitud.cliente }}</td>
-            <td>{{ solicitud.estado }}</td>
-            <td>
-                {% if solicitud.estado == 'Pendiente' %}
-                <a href="{% url 'cambiar_estado' solicitud.id %}" class="btn btn-success">Cambiar a Programada</a>
-                {% endif %}
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">No hay solicitudes registradas.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <h2>Listado de Solicitudes</h2>
 
-{% endblock %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Estado</th>
+                <th>Fecha Auditoría</th>
+                <th>Auditor</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for solicitud in solicitudes %}
+            <tr>
+                <td>{{ solicitud.id }}</td>
+                <td>{{ solicitud.cliente }}</td>
+                <td>{{ solicitud.estado }}</td>
+
+                <td>
+                    {% if solicitud.estado == 'Pendiente' %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
+                            <input type="date" name="fecha_auditoria" required>
+                    {% else %}
+                        {{ solicitud.programacion.fecha_auditoria|default:"No asignada" }}
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if solicitud.estado == 'Pendiente' %}
+                        <select name="auditor" required>
+                            {% for usuario in usuarios %}
+                                <option value="{{ usuario.id }}">{{ usuario.username }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        {{ solicitud.programacion.auditor.username|default:"No asignado" }}
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if solicitud.estado == 'Pendiente' %}
+                        <button type="submit" class="btn btn-success">Programar Auditoría</button>
+                        </form>  <!-- Aquí cerramos correctamente el formulario dentro del 'if' -->
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No hay solicitudes pendientes.</td>
+            </tr>
+            {% endfor %}  <!-- ¡Cierre del bucle 'for' aquí! -->
+        </tbody>
+    </table>
 </body>
-</html>
+{% endblock %}
