@@ -18,7 +18,10 @@
                 <th>ID</th>
                 <th>Cliente</th>
                 <th>Estado</th>
-                <th>Fecha Auditoría</th>
+                <th>Etapa 1 - Fecha</th>
+                <th>Etapa 1 - Hora</th>
+                <th>Etapa 2 - Fechas</th>
+                <th>Etapa 2 - Hora</th>
                 <th>Auditor</th>
                 <th>Acción</th>
             </tr>
@@ -30,17 +33,50 @@
                 <td>{{ solicitud.cliente }}</td>
                 <td>{{ solicitud.estado }}</td>
 
+                <!-- Etapa 1 -->
                 <td>
                     {% if solicitud.estado == 'Pendiente' %}
                         <form method="post">
                             {% csrf_token %}
                             <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
-                            <input type="date" name="fecha_auditoria" required>
+                            <input type="date" name="fecha_etapa_1" required>
                     {% else %}
-                        {{ solicitud.programacion.fecha_auditoria|default:"No asignada" }}
+                        {{ solicitud.programacion.fecha_etapa_1|default:"No asignada" }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if solicitud.estado == 'Pendiente' %}
+                        <input type="time" name="hora_etapa_1" required>
+                    {% else %}
+                        {{ solicitud.programacion.hora_etapa_1|default:"No asignada" }}
                     {% endif %}
                 </td>
 
+                <!-- Etapa 2 -->
+                <td>
+                    {% if solicitud.estado == 'Pendiente' %}
+                        <input type="date" name="fecha_etapa_2[]" required>
+                        <input type="date" name="fecha_etapa_2[]">
+                        <input type="date" name="fecha_etapa_2[]">
+                    {% else %}
+                        {% if solicitud.programacion.fecha_etapa_2 %}
+                            {% for fecha in solicitud.programacion.fecha_etapa_2 %}
+                                {{ fecha }}<br>
+                            {% endfor %}
+                        {% else %}
+                            No asignadas
+                        {% endif %}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if solicitud.estado == 'Pendiente' %}
+                        <input type="time" name="hora_etapa_2" required>
+                    {% else %}
+                        {{ solicitud.programacion.hora_etapa_2|default:"No asignada" }}
+                    {% endif %}
+                </td>
+
+                <!-- Auditor -->
                 <td>
                     {% if solicitud.estado == 'Pendiente' %}
                         <select name="auditor" required>
@@ -56,15 +92,15 @@
                 <td>
                     {% if solicitud.estado == 'Pendiente' %}
                         <button type="submit" class="btn btn-success">Programar Auditoría</button>
-                        </form>  <!-- Aquí cerramos correctamente el formulario dentro del 'if' -->
+                        </form>
                     {% endif %}
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6">No hay solicitudes pendientes.</td>
+                <td colspan="9">No hay solicitudes pendientes.</td>
             </tr>
-            {% endfor %}  <!-- ¡Cierre del bucle 'for' aquí! -->
+            {% endfor %}
         </tbody>
     </table>
 </body>

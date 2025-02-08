@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+</head>
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<body>
+
+
+<h2>Lista de Programaciones</h2>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th># Servicio</th>
+            <th>Nombre del Establecimiento</th>
+            <th>NIT</th>
+            <th>Representante</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th>Dirección</th>
+            <th>Ciudad</th>
+            <th>Departamento</th>
+            <th>Tipo de Servicio</th>
+            <th>Nivel CEA</th>
+            <th>Categorías</th>
+            <th>Observaciones</th>
+            <th>Auditor</th>
+            <th>Fecha y Hora</th>
+            <th>Imprimir</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for programacion in programaciones %}
+        <tr>
+            <td>{{ programacion.id }}</td>
+            <td>{{ programacion.solicitud.cliente.nombre_establecimiento }}</td>
+            <td>{{ programacion.solicitud.cliente.nit }}</td>
+            <td>{{ programacion.solicitud.cliente.representante_organismo }}</td>
+            <td>{{ programacion.solicitud.cliente.telefono_celular }}</td>
+            <td>{{ programacion.solicitud.cliente.correo_electronico }}</td>
+            <td>{{ programacion.solicitud.cliente.direccion }}</td>
+            <td>{{ programacion.solicitud.cliente.ciudad }}</td>
+            <td>{{ programacion.solicitud.cliente.departamento }}</td>
+            <td>Otorgamiento inicial</td> <!-- Ajusta según sea necesario -->
+            <td>{{ programacion.solicitud.cliente.nivel_cea }}</td>
+            <td>Categorías aquí</td> <!-- Si hay un campo para categorías, agrégalo -->
+            <td>Observaciones aquí</td> <!-- Si hay un campo para observaciones, agrégalo -->
+            <td>{{ programacion.auditor.get_full_name }}</td>
+            <td>{{ programacion.fecha_etapa_1 }} - {{ programacion.hora_etapa_1 }}</td>
+            <td><a href="{% url 'imprimir_programacion' programacion.id %}" target="_blank">🖨️</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+
+</body>
+</html>
