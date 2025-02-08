@@ -6,9 +6,8 @@ from .models import Programacion
 from django.http import HttpResponse
 from django.template.loader import get_template
 import pdfkit  # Instala con: pip install pdfkit
-
-
-
+from django.conf import settings
+from django.template.loader import render_to_string
 
 # Definimos los días de auditoría por nivel
 DIAS_AUDITORIA = {
@@ -87,17 +86,23 @@ def listado_programaciones(request):
 def imprimir_programacion(request, programacion_id):
     programacion = get_object_or_404(Programacion, id=programacion_id)
 
-    template = get_template("programacion/programacion_pdf.html")
-    html = template.render({"programacion": programacion})
+    # Renderizar el HTML desde una plantilla
+    html = render_to_string("programacion/imprimir.html", {"programacion": programacion})
 
-    # Configurar PDF
+    # Configurar opciones de pdfkit
     options = {
         "page-size": "Letter",
         "encoding": "UTF-8",
     }
 
-    pdf = pdfkit.from_string(html, False, options=options)
+    # Configurar wkhtmltopdf (asegúrate de que la ruta sea la correcta en tu sistema)
+    config = pdfkit.configuration(wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe")
 
+
+    # Convertir el HTML en un PDF
+    pdf = pdfkit.from_string(html, False, options=options, configuration=config)
+
+    # Devolver el PDF como respuesta
     response = HttpResponse(pdf, content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="programacion.pdf"'
     return response

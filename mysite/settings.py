@@ -129,4 +129,10 @@ LOGIN_URL = '/tasksapp/signin/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+import os
+PDFKIT_CONFIG = {
+    "wkhtmltopdf": r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"  # Ajusta según tu instalación
+}
+
+
 

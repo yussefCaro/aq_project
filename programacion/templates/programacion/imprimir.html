@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Programación</title>
+        <style>
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h2>Programación de Auditoría</h2>
+    <table>
+        <tr>
+            <th>Número de Servicio</th>
+            <td>{{ programacion.solicitud.numero_servicio }}</td>
+        </tr>
+        <tr>
+            <th>Nombre del Establecimiento</th>
+            <td>{{ programacion.solicitud.cliente.nombre }}</td>
+        </tr>
+        <tr>
+            <th>NIT</th>
+            <td>{{ programacion.solicitud.cliente.nit }}</td>
+        </tr>
+        <tr>
+            <th>Representante</th>
+            <td>{{ programacion.solicitud.cliente.representante }}</td>
+        </tr>
+        <tr>
+            <th>Teléfono</th>
+            <td>{{ programacion.solicitud.cliente.telefono }}</td>
+        </tr>
+        <tr>
+            <th>Correo</th>
+            <td>{{ programacion.solicitud.cliente.correo }}</td>
+        </tr>
+        <tr>
+            <th>Dirección</th>
+            <td>{{ programacion.solicitud.cliente.direccion }}</td>
+        </tr>
+        <tr>
+            <th>Ciudad</th>
+            <td>{{ programacion.solicitud.cliente.ciudad }}</td>
+        </tr>
+        <tr>
+            <th>Departamento</th>
+            <td>{{ programacion.solicitud.cliente.departamento }}</td>
+        </tr>
+        <tr>
+            <th>Tipo de Servicio</th>
+            <td>{{ programacion.solicitud.tipo_servicio }}</td>
+        </tr>
+        <tr>
+            <th>Nivel del CEA</th>
+            <td>{{ programacion.solicitud.cliente.nivel_cea }}</td>
+        </tr>
+        <tr>
+            <th>Categorías</th>
+            <td>{{ programacion.solicitud.categorias }}</td>
+        </tr>
+        <tr>
+            <th>Observaciones</th>
+            <td>{{ programacion.solicitud.observaciones }}</td>
+        </tr>
+        <tr>
+            <th>Auditor</th>
+            <td>{{ programacion.auditor.get_full_name }}</td>
+        </tr>
+        <tr>
+            <th>Fecha Etapa 1</th>
+            <td>{{ programacion.fecha_etapa_1 }} - {{ programacion.hora_etapa_1 }}</td>
+        </tr>
+        <tr>
+            <th>Fecha Etapa 2</th>
+            <td>{{ programacion.fecha_etapa_2 }} - {{ programacion.hora_etapa_2 }}</td>
+        </tr>
+    </table>
+
+</body>
+</html>
