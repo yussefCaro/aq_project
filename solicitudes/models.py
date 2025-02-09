@@ -1,6 +1,29 @@
 from django.db import models
 from datetime import date
 
+# Definimos las categorías de certificación como choices
+CATEGORIAS_CHOICES = [
+    ("A1", "A1"), ("A2", "A2"), ("B1", "B1"), ("B2", "B2"), ("B3", "B3"),
+    ("C1", "C1"), ("C2", "C2"), ("C3", "C3")
+]
+
+NIVELES_CEA = [
+    ("Nivel 1", "Nivel 1"),
+    ("Nivel 2", "Nivel 2"),
+    ("Nivel 3", "Nivel 3"),
+    ("Nivel 3 con Formación de Instructores", "Nivel 3 con Formación de Instructores"),
+]
+
+CERTIFICADO_CONFORMIDAD_CHOICES = [
+    ("Si", "Sí"),
+    ("No", "No aplica"),
+]
+
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=10, unique=True, choices=CATEGORIAS_CHOICES)
+
+    def __str__(self):
+        return self.get_nombre_display()  # ✅ Ahora sí funcionará correctamente
 
 class Cliente(models.Model):
     nit = models.CharField(max_length=20, unique=True)  # Nit único
@@ -16,11 +39,12 @@ class Cliente(models.Model):
     telefono_fijo = models.CharField(max_length=20, blank=True, null=True)
     telefono_celular = models.CharField(max_length=20)
     correo_electronico = models.EmailField()
-    nivel_cea = models.CharField(max_length=50)
+    nivel_cea = models.CharField(max_length=50, choices=NIVELES_CEA)
     cantidad_vehiculos = models.IntegerField(null=True, blank=True)
     cantidad_instructores = models.IntegerField(null=True, blank=True)
-    certificado_conformidad = models.CharField(max_length=100, choices=[('si', 'Sí'), ('no', 'No')])
-    nombre_ente_certificador = models.CharField(max_length=100, blank=True, null=True)
+    categorias_certificar = models.ManyToManyField(Categoria, blank=True)
+    certificado_conformidad = models.CharField(max_length=2, choices=CERTIFICADO_CONFORMIDAD_CHOICES, default="No")
+    nombre_ente_certificador = models.CharField(max_length=100, blank=True, null=True)  # Se llena si es "Sí"
     fecha_solicitud = models.DateField(null=True, blank=True)  # Se establece solo cuando se envía la solicitud
 
     def enviar_solicitud(self):
@@ -32,19 +56,19 @@ class Cliente(models.Model):
     def __str__(self):
         return self.nombre_establecimiento
 
-
-
 # Modelo Solicitud
 class Solicitud(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)  # Relación con el modelo Cliente
     fecha_solicitud = models.DateField(default=date.today)  # Fecha en que se crea la solicitud
-    estado = models.CharField(max_length=20, choices=[('Pendiente', 'Pendiente'), ('Aprobada', 'Aprobada'), ('Rechazada', 'Rechazada')], default='Pendiente')  # Estado de la solicitud
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ('Pendiente', 'Pendiente'),
+            ('Aprobada', 'Aprobada'),
+            ('Rechazada', 'Rechazada')
+        ],
+        default='Pendiente'
+    )  # Estado de la solicitud
 
     def __str__(self):
         return f"Solicitud para {self.cliente.nombre_establecimiento} - {self.estado}"
-
-
-
-
-
-

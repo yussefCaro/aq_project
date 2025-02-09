@@ -2,6 +2,7 @@ from django import forms
 from .models import Cliente, Solicitud
 from django.core.exceptions import ValidationError
 from datetime import date
+from django.forms import CheckboxSelectMultiple
 
 class ClienteForm(forms.ModelForm):
     """Formulario basado en el modelo Cliente."""
@@ -11,6 +12,7 @@ class ClienteForm(forms.ModelForm):
         widgets = {
             'nit': forms.TextInput(attrs={'placeholder': 'Nit del cliente'}),
             'telefono_fijo': forms.TextInput(attrs={'placeholder': 'Teléfono Fijo (opcional)'}),
+            'categorias_certificar': CheckboxSelectMultiple(),
             # Puedes agregar más widgets aquí si es necesario.
         }
 

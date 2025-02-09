@@ -82,9 +82,15 @@ def listado_programaciones(request):
     return render(request, "programacion/listado_programaciones.html", {"programaciones": programaciones})
 
 
+import json
+
 @login_required
 def imprimir_programacion(request, programacion_id):
     programacion = get_object_or_404(Programacion, id=programacion_id)
+
+    # Convertir la cadena JSON a una lista de fechas
+    if isinstance(programacion.fecha_etapa_2, str):
+        programacion.fecha_etapa_2 = json.loads(programacion.fecha_etapa_2)
 
     # Renderizar el HTML desde una plantilla
     html = render_to_string("programacion/imprimir.html", {"programacion": programacion})
@@ -95,9 +101,8 @@ def imprimir_programacion(request, programacion_id):
         "encoding": "UTF-8",
     }
 
-    # Configurar wkhtmltopdf (asegúrate de que la ruta sea la correcta en tu sistema)
+    # Configurar wkhtmltopdf
     config = pdfkit.configuration(wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe")
-
 
     # Convertir el HTML en un PDF
     pdf = pdfkit.from_string(html, False, options=options, configuration=config)
