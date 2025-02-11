@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Crear Cotización</title>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const precioNetoInput = document.getElementById("id_precio_neto");
+        const precioIvaInput = document.getElementById("id_precio_iva");
+        const precioTotalInput = document.getElementById("id_precio_total");
+        const form = document.querySelector("form");
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat("es-CO", {
+                style: "currency",
+                currency: "COP",
+                minimumFractionDigits: 2
+            }).format(value);
+        }
+
+        function calcularValores() {
+            let precioNeto = parseFloat(precioNetoInput.value.replace(/[^\d.]/g, "")) || 0;
+            let iva = precioNeto * 0.19;
+            let total = precioNeto + iva;
+
+            precioIvaInput.value = formatCurrency(iva);
+            precioTotalInput.value = formatCurrency(total);
+        }
+
+        precioNetoInput.addEventListener("input", calcularValores);
+
+        // Al enviar el formulario, convierte los valores de vuelta a números sin formato
+        form.addEventListener("submit", function () {
+            precioIvaInput.value = parseFloat(precioIvaInput.value.replace(/[^\d.]/g, "")) || 0;
+            precioTotalInput.value = parseFloat(precioTotalInput.value.replace(/[^\d.]/g, "")) || 0;
+        });
+    });
+    </script>
+</head>
+
+{% extends 'layouts/base.html' %}
+{% block content %}
+<body>
+    <h2>Crear Cotización</h2>
+    <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <label for="id_precio_iva"></label>
+
+
+    <label for="id_precio_total"></label>
+
+
+    <button type="submit">Guardar Cotización</button>
+</form>
+
+</body>
+{% endblock %}
+</html>

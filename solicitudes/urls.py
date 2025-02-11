@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import solicitudes_pendientes
 
 urlpatterns = [
     path('solicitud/', views.solicitud, name='solicitud'),
@@ -8,4 +9,5 @@ urlpatterns = [
     path('clientes/crear/<str:nit>/', views.crear_cliente, name='crear_cliente'),
     path('clientes/solicitud/pdf/<int:cliente_id>/', views.generar_solicitud_pdf, name='generar_solicitud_pdf'),
     path('enviar_solicitud/<int:cliente_id>/', views.enviar_solicitud, name='enviar_solicitud'),
+    path("pendientes/", solicitudes_pendientes, name="solicitudes_pendientes"),
 ]

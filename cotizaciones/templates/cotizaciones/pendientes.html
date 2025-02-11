@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>pendientes</title>
+</head>
+{% extends 'layouts/base.html' %}
+{% block content %}
+<body>
+    {% for cotizacion in cotizaciones %}
+    <p>Cotización {{ cotizacion.id }} - {{ cotizacion.solicitud.cliente }}</p>
+    <a href="{% url 'editar_cotizacion' cotizacion.id %}">Editar</a>
+{% endfor %}
+
+
+
+</body>
+
+{% endblock %}
+</html>

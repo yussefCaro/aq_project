@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'tasksapp',
     'solicitudes',
     'programacion',
+    'cotizaciones',
 
 ]
 

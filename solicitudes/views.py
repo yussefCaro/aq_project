@@ -161,3 +161,15 @@ def listado_solicitudes(request):
 
     return render(request, 'programacion/listado.html', {'solicitudes': solicitudes})
 
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Solicitud
+
+@login_required
+def solicitudes_pendientes(request):
+    """ Muestra las solicitudes que aún no tienen cotización """
+    solicitudes = Solicitud.objects.filter(estado="Pendiente")
+    return render(request, "solicitudes/pendientes.html", {"solicitudes": solicitudes})
+
+

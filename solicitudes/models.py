@@ -58,7 +58,7 @@ class Cliente(models.Model):
 
 # Modelo Solicitud
 class Solicitud(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)  # Relación con el modelo Cliente
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="solicitudes_solicitudes")  # Relación con el modelo Cliente
     fecha_solicitud = models.DateField(default=date.today)  # Fecha en que se crea la solicitud
     estado = models.CharField(
         max_length=20,
