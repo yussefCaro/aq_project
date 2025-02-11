@@ -4,7 +4,8 @@ from django.contrib.auth.decorators import login_required
 from solicitudes.models import Solicitud
 from .models import Cotizacion, TipoServicio
 from .forms import CotizacionForm
-
+from decimal import Decimal
+from django.utils.formats import localize
 
 
 @login_required
@@ -57,6 +58,11 @@ def listado_cotizaciones(request):
 def detalle_cotizacion(request, cotizacion_id):
     """ Muestra el detalle de una cotización """
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
+    # Formatear los valores como moneda
+    cotizacion.precio_neto = localize(cotizacion.precio_neto)
+    cotizacion.precio_iva = localize(cotizacion.precio_iva)
+    cotizacion.precio_total = localize(cotizacion.precio_total)
+
     return render(request, "cotizaciones/detalle_cotizacion.html", {"cotizacion": cotizacion})
 
 @login_required
@@ -64,13 +70,23 @@ def solicitudes_pendientes(request):
     solicitudes = Solicitud.objects.filter(estado="Pendiente")
     return render(request, "solicitudes/pendientes.html", {"solicitudes": solicitudes})
 
+
 @login_required
 def editar_cotizacion(request, cotizacion_id):
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
 
     if request.method == "POST":
-        cotizacion.precio_neto = request.POST["precio_neto"]
-        cotizacion.save()
-        return redirect("cotizaciones_realizadas")
+        form = CotizacionForm(request.POST, instance=cotizacion)
+        if form.is_valid():
+            cotizacion = form.save(commit=False)
+            cotizacion.precio_iva = Decimal(request.POST.get("precio_iva", 0))
+            cotizacion.precio_total = Decimal(request.POST.get("precio_total", 0))
+            cotizacion.save()
+            return redirect("listado_cotizaciones")
 
-    return render(request, "cotizaciones/editar.html", {"cotizacion": cotizacion})
+    else:
+        form = CotizacionForm(instance=cotizacion)
+
+    return render(request, "cotizaciones/editar_cotizacion.html", {"form": form, "cotizacion": cotizacion})
+
+

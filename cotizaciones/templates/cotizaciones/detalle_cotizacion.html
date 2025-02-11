@@ -6,6 +6,15 @@
     <title>detalle_cotizacion</title>
 </head>
 <body>
+    <h2>Detalles de la Cotización</h2>
+{% if cotizacion %}
+    <p><strong>ID:</strong> {{ cotizacion.id }}</p>
+    <p><strong>Cliente:</strong> {{ cotizacion.solicitud.cliente.nombre }}</p>
+    <p><strong>Estado:</strong> {{ cotizacion.solicitud.estado }}</p>
+    <p><strong>Precio Neto:</strong> {{ cotizacion.precio_neto }}</p>
+{% else %}
+    <p>No se encontró la cotización.</p>
+{% endif %}
 
 </body>
 </html>

@@ -1,0 +1,89 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Editar Cotización{% endblock %}
+
+{% block content %}
+<h2>Editar Cotización</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    {{ form.non_field_errors }}
+
+    <div>
+        <label for="{{ form.numero_servicio.id_for_label }}">Número de Servicio:</label>
+        {{ form.numero_servicio }}
+    </div>
+
+    <div>
+        <label for="{{ form.fecha_cotizacion.id_for_label }}">Fecha de Cotización:</label>
+        {{ form.fecha_cotizacion }}
+    </div>
+
+    <div>
+        <label for="{{ form.tipo_servicio.id_for_label }}">Tipo de Servicio:</label>
+        {{ form.tipo_servicio }}
+    </div>
+
+    <div>
+        <label for="id_precio_neto">Precio Neto:</label>
+        <input type="number" id="id_precio_neto" name="precio_neto" value="{{ form.precio_neto.value|default:0 }}" step="0.01" required>
+    </div>
+
+
+    <!-- IVA -->
+    <div>
+        <label for="id_precio_iva">IVA (19%):</label>
+        <input type="hidden" id="id_precio_iva" name="precio_iva">
+        <input type="text" id="id_precio_iva_visible" value="{{ form.precio_iva.value|default:0 }}" readonly>
+    </div>
+
+    <!-- Total -->
+    <div>
+        <label for="id_precio_total"><strong>Total:</strong></label>
+        <input type="hidden" id="id_precio_total" name="precio_total">
+        <input type="text" id="id_precio_total_visible" value="{{ form.precio_total.value|default:0 }}" readonly>
+
+    </div>
+
+    <div>
+        <label for="{{ form.estado.id_for_label }}">Estado:</label>
+        {{ form.estado }}
+    </div>
+
+    <button type="submit">Guardar Cambios</button>
+</form>
+
+<a href="{% url 'listado_cotizaciones' %}">Cancelar</a>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let precioNetoInput = document.getElementById("id_precio_neto");
+    let precioIvaInput = document.getElementById("id_precio_iva");
+    let precioIvaVisible = document.getElementById("id_precio_iva_visible");
+    let precioTotalInput = document.getElementById("id_precio_total");
+    let precioTotalVisible = document.getElementById("id_precio_total_visible");
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(value);
+    }
+
+    function actualizarValores() {
+        let precioNeto = parseFloat(precioNetoInput.value) || 0;
+        let precioIva = precioNeto * 0.19;
+        let precioTotal = precioNeto + precioIva;
+
+        precioIvaInput.value = precioIva.toFixed(2);  // Para enviar al servidor
+        precioIvaVisible.value = formatCurrency(precioIva);  // Para mostrar al usuario
+
+        precioTotalInput.value = precioTotal.toFixed(2);
+        precioTotalVisible.value = formatCurrency(precioTotal);
+    }
+
+    precioNetoInput.addEventListener("input", actualizarValores);
+    actualizarValores();
+});
+</script>
+
+
+{% endblock %}

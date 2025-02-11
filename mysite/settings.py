@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'solicitudes',
     'programacion',
     'cotizaciones',
+    'django.contrib.humanize',
 
 ]
 

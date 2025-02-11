@@ -25,6 +25,8 @@
         <td>{{ cotizacion.fecha_cotizacion }}</td>
         <td>{{ cotizacion.estado }}</td>
         <td><a href="{% url 'detalle_cotizacion' cotizacion.id %}">Ver</a></td>
+        <td><a href="{% url 'editar_cotizacion' cotizacion.id %}">Modificar</a></td>
+
     </tr>
     {% endfor %}
 </table>
