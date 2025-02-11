@@ -20,20 +20,20 @@
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'projects' %}">Projects</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'create_project' %}">Create Project</a></li>
+                <!-- <li class="nav-item"><a class="nav-link" href="{% url 'projects' %}">Projects</a></li>-->
+                <!--<li class="nav-item"><a class="nav-link" href="{% url 'create_project' %}">Create Project</a></li>-->
 
                 {% if user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'tasks' %}">Tasks Pending</a></li>
+                    <!--<li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Tasks Pending</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'tasks_completed' %}">Tasks Completed</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'create_task' %}">Create Task</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'create_task' %}">Create Task</a></li>-->
                     <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
 
                     {% if user.groups.all and "Comercial" in user.groups.values_list.0 %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'solicitud' %}">Solicitud</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'listado_solicitudes' %}">Listado de Solicitudes</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'listado_cotizaciones' %}">Listado de Cotizaciones</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'solicitudes_pendientes' %}">Solicitudes Pendientes</a></li>
+
 
 
 
