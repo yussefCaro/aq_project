@@ -1,10 +1,10 @@
 from django.db import models
-from solicitudes.models import Solicitud  # Importamos el modelo Solicitud
+from cotizaciones.models import Cotizacion  # Se cambia Solicitud por Cotizacion
 from django.contrib.auth.models import User  # Importamos User para asignar auditores
 import json
 
 class Programacion(models.Model):
-    solicitud = models.OneToOneField(Solicitud, on_delete=models.CASCADE)
+    cotizacion = models.OneToOneField(Cotizacion, on_delete=models.CASCADE)
 
     # Etapa 1
     fecha_etapa_1 = models.DateField(null=True, blank=True)
@@ -36,7 +36,7 @@ class Programacion(models.Model):
             "Nivel 3": 2,
             "Nivel 3 con Formación de Instructores": 2.5,
         }
-        return niveles.get(self.solicitud.cliente.nivel_cea, 1)  # Retorna el valor según el nivel del CEA
+        return niveles.get(self.cotizacion.solicitud.cliente.nivel_cea, 1)  # Se cambia solicitud por cotizacion.solicitud
 
     def save(self, *args, **kwargs):
         """Asigna automáticamente los días de auditoría en la etapa 2 según el nivel del CEA."""
@@ -56,4 +56,4 @@ class Programacion(models.Model):
         return []
 
     def __str__(self):
-        return f"Auditoría para {self.solicitud.cliente.nombre_establecimiento} - {self.fecha_etapa_1} / {self.fecha_etapa_2}"
+        return f"Auditoría para {self.cotizacion.solicitud.cliente.nombre_establecimiento} - {self.fecha_etapa_1} / {self.fecha_etapa_2}"

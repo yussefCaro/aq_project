@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,19 +14,19 @@
   <h2>Programación de Auditoría</h2>
     <table>
         <tr><th>Número de Servicio</th><td>{{ programacion.id }}</td></tr>
-        <tr><th>Nombre del Establecimiento</th><td>{{ programacion.solicitud.cliente.nombre_establecimiento }}</td></tr>
-        <tr><th>NIT</th><td>{{ programacion.solicitud.cliente.nit }}</td></tr>
-        <tr><th>Representante</th><td>{{ programacion.solicitud.cliente.representante_organismo }}</td></tr>
-        <tr><th>Teléfono</th><td>{{ programacion.solicitud.cliente.telefono_celular }}</td></tr>
-        <tr><th>Correo</th><td>{{ programacion.solicitud.cliente.correo_electronico }}</td></tr>
-        <tr><th>Dirección</th><td>{{ programacion.solicitud.cliente.direccion }}</td></tr>
-        <tr><th>Ciudad</th><td>{{ programacion.solicitud.cliente.ciudad }}</td></tr>
-        <tr><th>Departamento</th><td>{{ programacion.solicitud.cliente.departamento }}</td></tr>
+        <tr><th>Nombre del Establecimiento</th><td>{{ programacion.cotizacion.cliente.nombre_establecimiento }}</td></tr>
+        <tr><th>NIT</th><td>{{ programacion.cotizacion.cliente.nit }}</td></tr>
+        <tr><th>Representante</th><td>{{ programacion.cotizacion.cliente.representante_organismo }}</td></tr>
+        <tr><th>Teléfono</th><td>{{ programacion.cotizacion.cliente.telefono_celular }}</td></tr>
+        <tr><th>Correo</th><td>{{ programacion.cotizacion.cliente.correo_electronico }}</td></tr>
+        <tr><th>Dirección</th><td>{{ programacion.cotizacion.cliente.direccion }}</td></tr>
+        <tr><th>Ciudad</th><td>{{ programacion.cotizacion.cliente.ciudad }}</td></tr>
+        <tr><th>Departamento</th><td>{{ programacion.cotizacion.cliente.departamento }}</td></tr>
         <tr><th>Tipo de Servicio</th><td>Otorgamiento inicial</td></tr>
-        <tr><th>Nivel CEA</th><td>{{ programacion.solicitud.cliente.nivel_cea }}</td></tr>
-        <tr><th>Categorías</th><td>Categorías aquí</td></tr>
-        <tr><th>Observaciones</th><td>Observaciones aquí</td></tr>
-        <tr><th>Auditor</th><td>{{ programacion.auditor.get_full_name }}</td></tr>
+        <tr><th>Nivel CEA</th><td>{{ programacion.cotizacion.cliente.nivel_cea }}</td></tr>
+        <tr><th>Categorías</th><td>{{ programacion.cotizacion.categorias }}</td></tr>
+        <tr><th>Observaciones</th><td>{{ programacion.cotizacion.observaciones }}</td></tr>
+        <tr><th>Auditor</th><td>{{ programacion.auditor.get_full_name|default:programacion.auditor.username }}</td></tr>
         <tr><th>Fecha y Hora</th><td>{{ programacion.fecha_etapa_1 }} - {{ programacion.hora_etapa_1 }}</td></tr>
     </table>
 

@@ -1,13 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from solicitudes.models import Solicitud
+from cotizaciones.models import Cotizacion  # Se cambia Solicitud por Cotizacion
 from .models import Programacion
 from django.http import HttpResponse
-from django.template.loader import get_template
+from django.template.loader import get_template, render_to_string
 import pdfkit  # Instala con: pip install pdfkit
 from django.conf import settings
-from django.template.loader import render_to_string
+import json
 
 # Definimos los días de auditoría por nivel
 DIAS_AUDITORIA = {
@@ -17,31 +17,30 @@ DIAS_AUDITORIA = {
     "Nivel 3 con Formación de Instructores": {"etapa_1": 0.5, "etapa_2": 2.5},
 }
 
-
 @login_required
-def listado_solicitudes(request):
-    """ Muestra la lista de solicitudes pendientes y permite programarlas. """
-    solicitudes = Solicitud.objects.filter(estado="Pendiente")  # Solo solicitudes pendientes
+def listado_cotizaciones(request):
+    """ Muestra la lista de cotizaciones pendientes y permite programarlas. """
+    cotizaciones = Cotizacion.objects.filter(estado="Pendiente")  # Solo cotizaciones pendientes
     usuarios = User.objects.all()  # Lista de usuarios para asignar auditores
 
     if request.method == "POST":
-        solicitud_id = request.POST.get("solicitud_id")
+        cotizacion_id = request.POST.get("cotizacion_id")
         fecha_etapa_1 = request.POST.get("fecha_etapa_1")
         hora_etapa_1 = request.POST.get("hora_etapa_1")
         fecha_etapa_2 = request.POST.getlist("fecha_etapa_2[]")  # Lista de fechas
         hora_etapa_2 = request.POST.get("hora_etapa_2")
         auditor_id = request.POST.get("auditor")
 
-        solicitud = get_object_or_404(Solicitud, id=solicitud_id)
+        cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
         auditor = get_object_or_404(User, id=auditor_id)
 
         # Obtener el nivel del CEA y definir los días de auditoría
-        nivel = solicitud.cliente.nivel_cea  # Asegúrate de que `Solicitud` tiene un campo `nivel_cea`
+        nivel = cotizacion.solicitud.cliente.nivel_cea  # Se usa cotizacion.solicitud.cliente
         dias_etapa_1 = DIAS_AUDITORIA.get(nivel, {}).get("etapa_1", 0.5)
         dias_etapa_2 = DIAS_AUDITORIA.get(nivel, {}).get("etapa_2", 1)
 
         # Crear o actualizar la programación
-        programacion, created = Programacion.objects.get_or_create(solicitud=solicitud)
+        programacion, created = Programacion.objects.get_or_create(cotizacion=cotizacion)
         programacion.fecha_etapa_1 = fecha_etapa_1
         programacion.hora_etapa_1 = hora_etapa_1
         programacion.dias_auditoria_etapa_1 = dias_etapa_1
@@ -52,37 +51,36 @@ def listado_solicitudes(request):
         programacion.estado = "Programada"
         programacion.save()
 
-        # Cambiar estado de la solicitud a 'Programada'
-        solicitud.estado = "Programada"
-        solicitud.save()
+        # Cambiar estado de la cotización a 'Programada'
+        cotizacion.estado = "Programada"
+        cotizacion.save()
 
-        return redirect("listado_solicitudes")
+        return redirect("listado_cotizaciones")
 
-    return render(request, "programacion/listado.html", {"solicitudes": solicitudes, "usuarios": usuarios})
+    return render(request, "programacion/listado.html", {"cotizaciones": cotizaciones, "usuarios": usuarios})
 
 
 @login_required
-def cambiar_estado(request, solicitud_id):
-    """ Cambia el estado de una solicitud. """
-    solicitud = get_object_or_404(Solicitud, id=solicitud_id)
+def cambiar_estado(request, cotizacion_id):
+    """ Cambia el estado de una cotización. """
+    cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
 
     if request.method == "POST":
         nuevo_estado = request.POST.get("estado")
         if nuevo_estado in ["Pendiente", "Aprobada", "Rechazada", "Programada"]:
-            solicitud.estado = nuevo_estado
-            solicitud.save()
+            cotizacion.estado = nuevo_estado
+            cotizacion.save()
 
-    return redirect("listado_solicitudes")
+    return redirect("listado_cotizaciones")
+
 
 @login_required
 def listado_programaciones(request):
-    """ Muestra la lista de solicitudes programadas. """
-    programaciones = Programacion.objects.select_related("solicitud__cliente", "auditor").filter(estado="Programada")
+    """ Muestra la lista de cotizaciones programadas. """
+    programaciones = Programacion.objects.select_related("cotizacion__solicitud__cliente", "auditor").filter(estado="Programada")
 
     return render(request, "programacion/listado_programaciones.html", {"programaciones": programaciones})
 
-
-import json
 
 @login_required
 def imprimir_programacion(request, programacion_id):

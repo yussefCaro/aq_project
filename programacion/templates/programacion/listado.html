@@ -1,107 +1,94 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Listado de Solicitudes</title>
-</head>
-
 {% extends 'layouts/base.html' %}
 
 {% block content %}
-<body>
-    <h2>Listado de Solicitudes</h2>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Cliente</th>
-                <th>Estado</th>
-                <th>Etapa 1 - Fecha</th>
-                <th>Etapa 1 - Hora</th>
-                <th>Etapa 2 - Fechas</th>
-                <th>Etapa 2 - Hora</th>
-                <th>Auditor</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for solicitud in solicitudes %}
-            <tr>
-                <td>{{ solicitud.id }}</td>
-                <td>{{ solicitud.cliente }}</td>
-                <td>{{ solicitud.estado }}</td>
+<h2 class="my-4">Listado de Cotizaciones</h2>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Estado</th>
+            <th>Etapa 1 - Fecha</th>
+            <th>Etapa 1 - Hora</th>
+            <th>Etapa 2 - Fecha</th>
+            <th>Etapa 2 - Hora</th>
+            <th>Auditor</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cotizacion in cotizaciones %}
+        <tr>
+            <td class="text-center">{{ cotizacion.id }}</td>
+            <td>{{ cotizacion.cliente }}</td>
+            <td>{{ cotizacion.estado }}</td>
+
+            <!-- Formulario dentro de la fila -->
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="cotizacion_id" value="{{ cotizacion.id }}">
 
                 <!-- Etapa 1 -->
                 <td>
-                    {% if solicitud.estado == 'Pendiente' %}
-                        <form method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
-                            <input type="date" name="fecha_etapa_1" required>
+                    {% if cotizacion.estado == 'Pendiente' %}
+                        <input type="date" name="fecha_etapa_1" class="form-control" required>
                     {% else %}
-                        {{ solicitud.programacion.fecha_etapa_1|default:"No asignada" }}
+                        {{ cotizacion.programacion.fecha_etapa_1|default:"No asignada" }}
                     {% endif %}
                 </td>
                 <td>
-                    {% if solicitud.estado == 'Pendiente' %}
-                        <input type="time" name="hora_etapa_1" required>
+                    {% if cotizacion.estado == 'Pendiente' %}
+                        <input type="time" name="hora_etapa_1" class="form-control" required>
                     {% else %}
-                        {{ solicitud.programacion.hora_etapa_1|default:"No asignada" }}
+                        {{ cotizacion.programacion.hora_etapa_1|default:"No asignada" }}
                     {% endif %}
                 </td>
 
                 <!-- Etapa 2 -->
                 <td>
-                    {% if solicitud.estado == 'Pendiente' %}
-                        <input type="date" name="fecha_etapa_2[]" required>
-                        <input type="date" name="fecha_etapa_2[]">
-                        <input type="date" name="fecha_etapa_2[]">
+                    {% if cotizacion.estado == 'Pendiente' %}
+                        <input type="date" name="fecha_etapa_2" class="form-control">
                     {% else %}
-                        {% if solicitud.programacion.fecha_etapa_2 %}
-                            {% for fecha in solicitud.programacion.fecha_etapa_2 %}
-                                {{ fecha }}<br>
-                            {% endfor %}
-                        {% else %}
-                            No asignadas
-                        {% endif %}
+                        {{ cotizacion.programacion.fecha_etapa_2|default:"No asignada" }}
                     {% endif %}
                 </td>
                 <td>
-                    {% if solicitud.estado == 'Pendiente' %}
-                        <input type="time" name="hora_etapa_2" required>
+                    {% if cotizacion.estado == 'Pendiente' %}
+                        <input type="time" name="hora_etapa_2" class="form-control">
                     {% else %}
-                        {{ solicitud.programacion.hora_etapa_2|default:"No asignada" }}
+                        {{ cotizacion.programacion.hora_etapa_2|default:"No asignada" }}
                     {% endif %}
                 </td>
 
                 <!-- Auditor -->
                 <td>
-                    {% if solicitud.estado == 'Pendiente' %}
-                        <select name="auditor" required>
+                    {% if cotizacion.estado == 'Pendiente' %}
+                        <select name="auditor" class="form-select" required>
                             {% for usuario in usuarios %}
                                 <option value="{{ usuario.id }}">{{ usuario.username }}</option>
                             {% endfor %}
                         </select>
                     {% else %}
-                        {{ solicitud.programacion.auditor.username|default:"No asignado" }}
+                        {{ cotizacion.programacion.auditor.username|default:"No asignado" }}
                     {% endif %}
                 </td>
 
-                <td>
-                    {% if solicitud.estado == 'Pendiente' %}
-                        <button type="submit" class="btn btn-success">Programar Auditoría</button>
-                        </form>
+                <!-- Botón de Programar -->
+                <td class="text-center">
+                    {% if cotizacion.estado == 'Pendiente' %}
+                        <button type="submit" class="btn btn-sm btn-success">Programar</button>
                     {% endif %}
                 </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="9">No hay solicitudes pendientes.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
+            </form>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="9" class="text-center">No hay cotizaciones pendientes.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 {% endblock %}
