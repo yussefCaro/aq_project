@@ -11,9 +11,9 @@ DIAS_AUDITORIA = {
 }
 
 class Cotizacion(models.Model):
-    solicitud = models.OneToOneField(Solicitud, on_delete=models.CASCADE)
+    solicitud = models.OneToOneField('solicitudes.Solicitud', on_delete=models.CASCADE)
     numero_servicio = models.CharField(max_length=10, unique=True, help_text="Formato: XXXX-X")
-    fecha_cotizacion = models.DateField(auto_now_add=True)
+    fecha_cotizacion = models.DateField(null=True, blank=True)
     tipo_servicio = models.ManyToManyField("TipoServicio")
 
     dias_auditoria_etapa_1 = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
@@ -23,11 +23,13 @@ class Cotizacion(models.Model):
     precio_iva = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"), help_text="IVA (19%)")
     precio_total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"), help_text="Total con IVA")
 
-    estado = models.CharField(
-        max_length=20,
-        choices=[('Pendiente', 'Pendiente'), ('Aprobada', 'Aprobada'), ('Rechazada', 'Rechazada')],
-        default='Pendiente'
-    )
+    ESTADO_CHOICES = [
+        ('Pendiente', 'Pendiente'),
+        ('Aprobada', 'Aprobada'),
+        ('Rechazada', 'Rechazada'),
+        ('Programada', 'Programada'),
+    ]
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Pendiente')
 
     def save(self, *args, **kwargs):
         """ Calcula automáticamente el precio con IVA antes de guardar """

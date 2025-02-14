@@ -58,12 +58,20 @@ def listado_cotizaciones(request):
 def detalle_cotizacion(request, cotizacion_id):
     """ Muestra el detalle de una cotización """
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
-    # Formatear los valores como moneda
     cotizacion.precio_neto = localize(cotizacion.precio_neto)
     cotizacion.precio_iva = localize(cotizacion.precio_iva)
     cotizacion.precio_total = localize(cotizacion.precio_total)
 
-    return render(request, "cotizaciones/detalle_cotizacion.html", {"cotizacion": cotizacion})
+    solicitud = cotizacion.solicitud
+    cliente = solicitud.cliente  # Cliente asociado a la solicitud
+
+    context = {
+        "cotizacion": cotizacion,
+        "solicitud": solicitud,
+        "cliente": cliente,  # Agregar cliente al contexto
+    }
+
+    return render(request, "cotizaciones/detalle_cotizacion.html", context)
 
 @login_required
 def solicitudes_pendientes(request):
