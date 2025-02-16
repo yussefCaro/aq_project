@@ -11,7 +11,7 @@ DIAS_AUDITORIA = {
 }
 
 class Cotizacion(models.Model):
-    solicitud = models.OneToOneField('solicitudes.Solicitud', on_delete=models.CASCADE)
+    solicitud = models.ForeignKey(Solicitud, on_delete=models.CASCADE, related_name="cotizaciones")
     numero_servicio = models.CharField(max_length=10, unique=True, help_text="Formato: XXXX-X")
     fecha_cotizacion = models.DateField(null=True, blank=True)
     tipo_servicio = models.ManyToManyField("TipoServicio")
@@ -47,17 +47,3 @@ class TipoServicio(models.Model):
 
     def __str__(self):
         return self.nombre
-
-
-class Solicitud(models.Model):
-    ESTADO_CHOICES = [
-        ('Pendiente', 'Pendiente'),
-        ('Cotizada', 'Cotizada'),
-    ]
-
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="solicitudes")
-    nit = models.CharField(max_length=20, null=True, blank=True, help_text="Número de NIT del cliente")
-    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='Pendiente')
-
-    def __str__(self):
-        return f"Solicitud {self.id} - {self.cliente.nombre_establecimiento if self.cliente else 'Sin Cliente'}"

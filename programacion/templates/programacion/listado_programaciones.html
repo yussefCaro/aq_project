@@ -20,7 +20,7 @@
             <th>Nivel CEA</th>
             <th>Categorías</th>
             <th>Observaciones</th>
-            <th>Auditor</th>
+            <th>Auditores</th>
             <th>Fechas Programadas</th>
             <th>Imprimir</th>
         </tr>
@@ -41,11 +41,22 @@
             <td>{{ programacion.cotizacion.cliente.nivel_cea }}</td>
             <td>{{ programacion.cotizacion.cliente.categorias|default:"No especificado" }}</td>
             <td>{{ programacion.cotizacion.cliente.observaciones|default:"N/A" }}</td>
-            <td>{{ programacion.auditor.get_full_name }}</td>
             <td>
-                <strong>Etapa 1:</strong> {{ programacion.fecha_etapa_1 }} - {{ programacion.hora_etapa_1 }}<br>
-                {% if programacion.fecha_etapa_2 %}
-                    <strong>Etapa 2:</strong> {{ programacion.fecha_etapa_2 }} - {{ programacion.hora_etapa_2 }}
+                {% for auditor in programacion.auditores.all %}
+                    {{ auditor.get_full_name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    <em>No asignado</em>
+                {% endfor %}
+            </td>
+            <td>
+                <strong>Etapa 1:</strong> {{ programacion.fecha_programacion_etapa1 }}<br>
+                {% if programacion.fecha_programacion_etapa2 %}
+                    <strong>Etapa 2:</strong>
+                    <ul>
+                        {% for fecha in programacion.fecha_programacion_etapa2 %}
+                            <li>{{ fecha }}</li>
+                        {% endfor %}
+                    </ul>
                 {% else %}
                     <em>No programada</em>
                 {% endif %}

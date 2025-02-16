@@ -1,59 +1,31 @@
 from django.db import models
-from cotizaciones.models import Cotizacion  # Se cambia Solicitud por Cotizacion
-from django.contrib.auth.models import User  # Importamos User para asignar auditores
-import json
+from django.contrib.auth.models import User
+from cotizaciones.models import Cotizacion  # Importamos Cotizacion desde la app correspondiente
 
-class Programacion(models.Model):
-    cotizacion = models.OneToOneField(Cotizacion, on_delete=models.CASCADE)
+class ProgramacionAuditoria(models.Model):
+    cotizacion = models.OneToOneField(Cotizacion, on_delete=models.CASCADE, related_name="programacion")
+    auditores = models.ManyToManyField(User, related_name="programaciones")
 
-    # Etapa 1
-    fecha_etapa_1 = models.DateField(null=True, blank=True)
-    hora_etapa_1 = models.TimeField(null=True, blank=True)
-    dias_auditoria_etapa_1 = models.DecimalField(max_digits=3, decimal_places=1, default=0.5)
+    fecha_programacion_etapa1 = models.DateField()
+    fecha_programacion_etapa2 = models.JSONField(default=list)  # Lista de fechas para etapa 2
+    hora_etapa1 = models.TimeField(null=True, blank=True)
+    hora_etapa2 = models.TimeField(null=True, blank=True)
+    iaf_md4_confirmado = models.BooleanField(default=False)
 
-    # Etapa 2
-    fecha_etapa_2 = models.JSONField(null=True, blank=True)  # Almacena hasta 3 fechas en formato JSON
-    hora_etapa_2 = models.TimeField(null=True, blank=True)
-    dias_auditoria_etapa_2 = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    ESTADOS_PROGRAMACION = [
+        ('Pendiente', 'Pendiente'),
+        ('Programada', 'Programada'),
+        ('Finalizada', 'Finalizada'),
+    ]
 
-    auditor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="auditorias")
-    estado = models.CharField(
-        max_length=20,
-        choices=[
-            ('Pendiente', 'Pendiente'),
-            ('Aprobada', 'Aprobada'),
-            ('Rechazada', 'Rechazada'),
-            ('Programada', 'Programada'),
-        ],
-        default='Pendiente'
-    )
-
-    def calcular_dias_auditoria(self):
-        """Retorna los días de auditoría de la etapa 2 según el nivel del CEA."""
-        niveles = {
-            "Nivel 1": 1,
-            "Nivel 2": 1.5,
-            "Nivel 3": 2,
-            "Nivel 3 con Formación de Instructores": 2.5,
-        }
-        return niveles.get(self.cotizacion.solicitud.cliente.nivel_cea, 1)  # Se cambia solicitud por cotizacion.solicitud
+    estado = models.CharField(max_length=20, choices=ESTADOS_PROGRAMACION, default='Pendiente')
 
     def save(self, *args, **kwargs):
-        """Asigna automáticamente los días de auditoría en la etapa 2 según el nivel del CEA."""
-        if not self.dias_auditoria_etapa_2:
-            self.dias_auditoria_etapa_2 = self.calcular_dias_auditoria()
-
-        # Convertir lista de fechas en JSON si es necesario
-        if isinstance(self.fecha_etapa_2, list):
-            self.fecha_etapa_2 = json.dumps(self.fecha_etapa_2)
-
+        """Sincroniza el estado con la cotización."""
+        if self.estado == 'Programada':
+            self.cotizacion.estado = 'Programada'
+            self.cotizacion.save()
         super().save(*args, **kwargs)
 
-    def get_fecha_etapa_2(self):
-        """Devuelve las fechas de la etapa 2 como una lista si es posible."""
-        if self.fecha_etapa_2:
-            return json.loads(self.fecha_etapa_2)
-        return []
-
     def __str__(self):
-        return f"Auditoría para {self.cotizacion.solicitud.cliente.nombre_establecimiento} - {self.fecha_etapa_1} / {self.fecha_etapa_2}"
+        return f'Programación de {self.cotizacion.numero_servicio} - Estado: {self.estado}'
