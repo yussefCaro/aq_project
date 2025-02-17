@@ -1,0 +1,16 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+    <h1>Crear Programación de Auditoría</h1>
+
+  <h2>Solicitudes: {{ cotizacion }}</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}  <!-- Aquí se renderiza el formulario de Django -->
+
+    <button type="submit">Crear Programación</button>
+  </form>
+
+
+{% endblock %}

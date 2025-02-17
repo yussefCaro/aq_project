@@ -5,11 +5,14 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 import json
 import pdfkit
-from django.conf import settings
-
 from cotizaciones.models import Cotizacion
-from .models import ProgramacionAuditoria
+
 from .forms import ProgramacionAuditoriaForm
+
+from .models import ProgramacionAuditoria
+
+
+
 
 # Definimos los días de auditoría por nivel
 DIAS_AUDITORIA = {
@@ -28,28 +31,29 @@ def listado_cotizaciones(request):
     if request.method == "POST":
         cotizacion_id = request.POST.get("cotizacion_id")
         fecha_etapa_1 = request.POST.get("fecha_etapa_1")
-        fecha_etapa_2 = request.POST.getlist("fecha_etapa_2[]")  # Lista de fechas
-        auditores_ids = request.POST.getlist("auditores")  # Lista de auditores seleccionados
+        hora_etapa_1 = request.POST.get("hora_etapa_1")
+        fecha_etapa_2 = request.POST.get("fecha_etapa_2")
+        hora_etapa_2 = request.POST.get("hora_etapa_2")
+        auditor_id = request.POST.get("auditor")
 
         cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
-        auditores = User.objects.filter(id__in=auditores_ids)
-
-        # Obtener los días de auditoría según el nivel
-        nivel = cotizacion.solicitud.cliente.nivel_cea
-        dias_etapa_1 = DIAS_AUDITORIA.get(nivel, {}).get("etapa_1", 0.5)
-        dias_etapa_2 = DIAS_AUDITORIA.get(nivel, {}).get("etapa_2", 1)
+        auditor = get_object_or_404(User, id=auditor_id)
 
         # Crear o actualizar la programación
         programacion, created = ProgramacionAuditoria.objects.get_or_create(cotizacion=cotizacion)
-        programacion.fecha_programacion_etapa1 = fecha_etapa_1
-        programacion.fecha_programacion_etapa2 = fecha_etapa_2  # JSONField, se almacena como lista
-        programacion.estado = "Programada"
-        programacion.save()
-        programacion.auditores.set(auditores)  # Asignar auditores
+
+        # Asignar las fechas y horas a la programación
+        programacion.fecha_etapa_1 = fecha_etapa_1
+        programacion.hora_etapa_1 = hora_etapa_1
+        programacion.fecha_etapa_2 = fecha_etapa_2
+        programacion.hora_etapa_2 = hora_etapa_2
+        programacion.auditor = auditor
 
         # Cambiar estado de la cotización
         cotizacion.estado = "Programada"
         cotizacion.save()
+
+        programacion.save()
 
         return redirect("listado_cotizaciones")
 
@@ -70,9 +74,7 @@ def cambiar_estado(request, cotizacion_id):
     return redirect("listado_cotizaciones")
 
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from .models import ProgramacionAuditoria
+
 
 @login_required
 def listado_programaciones(request):
@@ -134,3 +136,27 @@ def programar_auditoria(request, cotizacion_id):
         form = ProgramacionAuditoriaForm(instance=programacion)
 
     return render(request, "programacion/programar_auditoria.html", {"form": form, "cotizacion": cotizacion})
+
+
+
+
+@login_required
+def crear_programacion(request, cotizacion_id):
+    """ Vista para crear una nueva programación de auditoría. """
+    cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
+
+    if request.method == "POST":
+        form = ProgramacionAuditoriaForm(request.POST)
+        if form.is_valid():
+            # Crear la nueva programación
+            programacion = form.save(commit=False)
+            programacion.cotizacion = cotizacion  # Asociar la cotización
+            programacion.estado = "Programada"  # Asignar el estado de la programación
+            programacion.save()
+
+            # Redirigir a la lista de programaciones
+            return redirect("listado_programaciones")
+    else:
+        form = ProgramacionAuditoriaForm()
+
+    return render(request, "programacion/crear_programacion.html", {"form": form, "cotizacion": cotizacion})
