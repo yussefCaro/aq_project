@@ -1,0 +1,16 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+    <h1>{{ titulo }}</h1>  
+
+    <h2>Cotización: {{ cotizacion.numero_servicio }}</h2>  
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}  
+
+        <button type="submit">{{ boton_texto }}</button>  
+    </form>
+
+    <a href="{% url 'listado_programaciones' %}">Volver al listado</a>  
+{% endblock %}

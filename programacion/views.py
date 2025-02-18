@@ -131,32 +131,36 @@ def programar_auditoria(request, cotizacion_id):
         form = ProgramacionAuditoriaForm(request.POST, instance=programacion)
         if form.is_valid():
             form.save()
-            return redirect("listado_programaciones")  # Redirigir a la lista de programaciones
+            return redirect("listado_programaciones")
     else:
         form = ProgramacionAuditoriaForm(instance=programacion)
 
-    return render(request, "programacion/programar_auditoria.html", {"form": form, "cotizacion": cotizacion})
-
-
+    return render(request, "programacion/form_programacion.html", {
+        "form": form,
+        "cotizacion": cotizacion,
+        "titulo": "Programar Auditoría",
+        "boton_texto": "Guardar Programación"
+    })
 
 
 @login_required
 def crear_programacion(request, cotizacion_id):
-    """ Vista para crear una nueva programación de auditoría. """
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
 
     if request.method == "POST":
         form = ProgramacionAuditoriaForm(request.POST)
         if form.is_valid():
-            # Crear la nueva programación
             programacion = form.save(commit=False)
-            programacion.cotizacion = cotizacion  # Asociar la cotización
-            programacion.estado = "Programada"  # Asignar el estado de la programación
+            programacion.cotizacion = cotizacion
+            programacion.estado = "Programada"
             programacion.save()
-
-            # Redirigir a la lista de programaciones
             return redirect("listado_programaciones")
     else:
         form = ProgramacionAuditoriaForm()
 
-    return render(request, "programacion/crear_programacion.html", {"form": form, "cotizacion": cotizacion})
+    return render(request, "programacion/form_programacion.html", {
+        "form": form,
+        "cotizacion": cotizacion,
+        "titulo": "Crear Programación de Auditoría",
+        "boton_texto": "Crear Programación"
+    })

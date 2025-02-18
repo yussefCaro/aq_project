@@ -32,10 +32,11 @@
                         <li class="nav-item"><a class="nav-link" href="{% url 'listado_cotizaciones' %}">Cotizaciones</a></li>
                     {% endif %}
 
-                    <li class="nav-item"><a class="nav-link" href="{% url 'listado_programaciones' %}">Programaciones</a></li>
+                    {% if "Programación" in user.groups.all|join:"," %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'listado_programaciones' %}">Programaciones</a></li>
+                    {% endif %}
 
                     <li class="nav-item"><a class="nav-link text-danger" href="{% url 'logout' %}">Cerrar sesión</a></li>
-
                 {% else %}
                     <!-- Sección para usuarios NO autenticados -->
                     <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Registrarse</a></li>
@@ -55,4 +56,3 @@
 
 </body>
 </html>
-
