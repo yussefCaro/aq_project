@@ -1,31 +1,40 @@
 from django.db import models
-from django.contrib.auth.models import User
-from cotizaciones.models import Cotizacion  # Importamos Cotizacion desde la app correspondiente
 
-class ProgramacionAuditoria(models.Model):
-    cotizacion = models.OneToOneField(Cotizacion, on_delete=models.CASCADE, related_name="programacion")
-    auditores = models.ManyToManyField(User, related_name="programaciones")
+class NivelAuditoriaCEA(models.Model):
+    nivel = models.CharField(max_length=100, unique=True)
+    dias_etapa1 = models.FloatField(default=0.5)  # Etapa 1 siempre es 0.5 días
+    dias_etapa2 = models.FloatField()
 
-    fecha_programacion_etapa1 = models.DateField()
-    fecha_programacion_etapa2 = models.JSONField(default=list)  # Lista de fechas para etapa 2
-    hora_etapa1 = models.TimeField(null=True, blank=True)
-    hora_etapa2 = models.TimeField(null=True, blank=True)
+    def __str__(self):
+        return self.nivel
+
+class Auditor(models.Model):
+    nombre = models.CharField(max_length=100)
+    cedula = models.CharField(max_length=20, unique=True)
+    cargo = models.CharField(max_length=50)
+    telefono = models.CharField(max_length=20)
+    correo = models.EmailField()
     iaf_md4_confirmado = models.BooleanField(default=False)
 
-    ESTADOS_PROGRAMACION = [
-        ('Pendiente', 'Pendiente'),
-        ('Programada', 'Programada'),
-        ('Finalizada', 'Finalizada'),
-    ]
+    def __str__(self):
+        return f"{self.nombre} - {self.cargo}"
 
-    estado = models.CharField(max_length=20, choices=ESTADOS_PROGRAMACION, default='Pendiente')
+class ProgramacionAuditoria(models.Model):
+    cotizacion = models.ForeignKey('cotizaciones.Cotizacion', on_delete=models.CASCADE)
+    nivel_auditoria = models.ForeignKey(NivelAuditoriaCEA, on_delete=models.CASCADE)
+    fecha_programacion_etapa1 = models.DateField()
+    hora_etapa1 = models.TimeField()
+    fecha_programacion_etapa2 = models.JSONField(default=list)  # Admite hasta 3 fechas
+    hora_etapa2 = models.TimeField()
+    auditores = models.ManyToManyField(Auditor)  # Relación con múltiples auditores
+    iaf_md4_confirmado = models.BooleanField(default=False)
+    estado = models.CharField(max_length=20, default="Pendiente")
 
     def save(self, *args, **kwargs):
-        """Sincroniza el estado con la cotización."""
-        if self.estado == 'Programada':
-            self.cotizacion.estado = 'Programada'
-            self.cotizacion.save()
+        # Restricción de máximo 3 fechas en etapa 2
+        if len(self.fecha_programacion_etapa2) > 3:
+            raise ValueError("No puedes agregar más de 3 fechas para la etapa 2.")
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'Programación de {self.cotizacion.numero_servicio} - Estado: {self.estado}'
+        return f"Programación {self.id} - Cotización {self.cotizacion.id}"

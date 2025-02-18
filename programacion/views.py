@@ -144,23 +144,22 @@ def programar_auditoria(request, cotizacion_id):
 
 
 @login_required
-def crear_programacion(request, cotizacion_id):
-    cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
+def crear_programacion(request, cotizacion_id=None):
+    cotizacion = None
+    if cotizacion_id:
+        cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
 
     if request.method == "POST":
         form = ProgramacionAuditoriaForm(request.POST)
         if form.is_valid():
             programacion = form.save(commit=False)
-            programacion.cotizacion = cotizacion
-            programacion.estado = "Programada"
+            if cotizacion:
+                programacion.cotizacion = cotizacion
             programacion.save()
+            form.save_m2m()  # Guardar relaciones ManyToMany
             return redirect("listado_programaciones")
     else:
         form = ProgramacionAuditoriaForm()
 
-    return render(request, "programacion/form_programacion.html", {
-        "form": form,
-        "cotizacion": cotizacion,
-        "titulo": "Crear Programación de Auditoría",
-        "boton_texto": "Crear Programación"
-    })
+    return render(request, "programacion/form_programacion.html", {"form": form, "cotizacion": cotizacion})
+

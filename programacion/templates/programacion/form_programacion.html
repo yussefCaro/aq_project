@@ -1,16 +1,42 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
-    <h1>{{ titulo }}</h1>  
+    <h1>{{ titulo }}</h1>
 
-    <h2>Cotización: {{ cotizacion.numero_servicio }}</h2>  
+    <h2>Cotización: {{ cotizacion.numero_servicio }}</h2>
 
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}  
 
-        <button type="submit">{{ boton_texto }}</button>  
+        <label for="fecha_programacion_etapa1">Fecha de Programación Etapa 1:</label>
+        <input type="date" name="fecha_programacion_etapa1" required>
+
+        <label for="hora_etapa1">Hora Etapa 1:</label>
+        <input type="time" name="hora_etapa1" required>
+
+        <label for="fecha_programacion_etapa2">Fechas de Programación Etapa 2 (máximo 3):</label>
+        <input type="text" name="fecha_programacion_etapa2" placeholder="Separadas por comas" required>
+
+        <label for="hora_etapa2">Hora Etapa 2:</label>
+        <input type="time" name="hora_etapa2" required>
+
+        <fieldset>
+            <legend>Seleccionar Auditores</legend>
+            {% for auditor in form.auditores.field.queryset %}
+                <label>
+                    <input type="checkbox" name="auditores" value="{{ auditor.id }}">
+                    {{ auditor.nombre }} - {{ auditor.cargo }}
+                </label><br>
+            {% endfor %}
+        </fieldset>
+
+        <label>
+            <input type="checkbox" name="iaf_md4_confirmado">
+            Confirmación IAF MD4
+        </label>
+
+        <button type="submit">{{ boton_texto }}</button>
     </form>
 
-    <a href="{% url 'listado_programaciones' %}">Volver al listado</a>  
+    <a href="{% url 'listado_programaciones' %}">Volver al listado</a>
 {% endblock %}
