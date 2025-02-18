@@ -14,11 +14,16 @@
         <label for="hora_etapa1">Hora Etapa 1:</label>
         <input type="time" name="hora_etapa1" required>
 
-        <label for="fecha_programacion_etapa2">Fechas de Programación Etapa 2 (máximo 3):</label>
-        <input type="text" name="fecha_programacion_etapa2" placeholder="Separadas por comas" required>
+       <label>Fechas de Programación Etapa 2 (máximo 3):</label>
+<div id="fechas_etapa2_container">
+    <div class="fecha_etapa2">
+        <input type="date" name="fecha_programacion_etapa2[]" required>
+        <input type="time" name="hora_etapa2[]" required>
+    </div>
+</div>
+<button type="button" id="agregar_fecha_etapa2">Agregar otra fecha</button>
 
-        <label for="hora_etapa2">Hora Etapa 2:</label>
-        <input type="time" name="hora_etapa2" required>
+
 
         <fieldset>
             <legend>Seleccionar Auditores</legend>
@@ -39,4 +44,36 @@
     </form>
 
     <a href="{% url 'listado_programaciones' %}">Volver al listado</a>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const container = document.getElementById("fechas_etapa2_container");
+    const addButton = document.getElementById("agregar_fecha_etapa2");
+
+    addButton.addEventListener("click", function() {
+        const currentFields = container.getElementsByClassName("fecha_etapa2");
+
+        if (currentFields.length < 3) {  // Máximo 3 fechas
+            const div = document.createElement("div");
+            div.classList.add("fecha_etapa2");
+            div.innerHTML = `
+                <input type="date" name="fecha_programacion_etapa2[]" required>
+                <input type="time" name="hora_etapa2[]" required>
+                <button type="button" class="eliminar_fecha">❌</button>
+            `;
+            container.appendChild(div);
+
+            // Agregar evento para eliminar la fecha
+            div.querySelector(".eliminar_fecha").addEventListener("click", function() {
+                div.remove();
+            });
+        } else {
+            alert("Solo puedes agregar hasta 3 fechas.");
+        }
+    });
+});
+</script>
+
+
+
 {% endblock %}
