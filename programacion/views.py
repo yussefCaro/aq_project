@@ -10,7 +10,10 @@ from cotizaciones.models import Cotizacion
 from .forms import ProgramacionAuditoriaForm
 
 from .models import ProgramacionAuditoria
-
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import ProgramacionAuditoria, Auditor, FechaEtapa2
+from .forms import ProgramacionAuditoriaForm, FechaEtapa2FormSet
 
 
 
@@ -127,19 +130,24 @@ def programar_auditoria(request, cotizacion_id):
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
     programacion, created = ProgramacionAuditoria.objects.get_or_create(cotizacion=cotizacion)
 
-    if request.method == "POST":
+    if request.method == 'POST':
         form = ProgramacionAuditoriaForm(request.POST, instance=programacion)
-        if form.is_valid():
-            form.save()
-            return redirect("listado_programaciones")
+        fecha_formset = FechaEtapa2FormSet(request.POST, instance=programacion)
+
+        if form.is_valid() and fecha_formset.is_valid():
+            programacion = form.save()
+            fecha_formset.save()
+            return redirect('listado_programaciones')
     else:
         form = ProgramacionAuditoriaForm(instance=programacion)
+        fecha_formset = FechaEtapa2FormSet(instance=programacion)
 
-    return render(request, "programacion/form_programacion.html", {
-        "form": form,
-        "cotizacion": cotizacion,
-        "titulo": "Programar Auditoría",
-        "boton_texto": "Guardar Programación"
+    return render(request, 'programacion/form_programacion.html', {
+        'form': form,
+        'fecha_formset': fecha_formset,
+        'cotizacion': cotizacion,
+        'titulo': 'Programar Auditoría',
+        'boton_texto': 'Guardar Programación'
     })
 
 

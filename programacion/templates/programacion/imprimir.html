@@ -79,13 +79,11 @@
             <th>Fechas Etapa 2</th>
             <td>
                 <ul>
-                    {% if programacion.fecha_etapa_2 %}
-                        {% for fecha in programacion.fecha_etapa_2 %}
-                            <li>{{ fecha }}</li>
-                        {% endfor %}
-                    {% else %}
+                    {% for fecha_etapa2 in programacion.fechas_etapa2.all %}
+                        <li>{{ fecha_etapa2.fecha }} - {{ fecha_etapa2.hora }} - {{fecha_etapa2.dias_auditoria}} días</li>
+                    {% empty %}
                         <li>No asignadas</li>
-                    {% endif %}
+                    {% endfor %}
                 </ul>
             </td>
         </tr>

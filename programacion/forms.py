@@ -1,11 +1,7 @@
 from django import forms
-from .models import ProgramacionAuditoria, Auditor
+from .models import ProgramacionAuditoria, Auditor, FechaEtapa2
 
 class ProgramacionAuditoriaForm(forms.ModelForm):
-    fecha_programacion_etapa2 = forms.CharField(
-        required=False,
-        help_text="Ingrese hasta 3 fechas separadas por comas"
-    )
     auditores = forms.ModelMultipleChoiceField(
         queryset=Auditor.objects.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -14,16 +10,11 @@ class ProgramacionAuditoriaForm(forms.ModelForm):
 
     class Meta:
         model = ProgramacionAuditoria
-        fields = [
-            'cotizacion', 'nivel_auditoria', 'fecha_programacion_etapa1', 'hora_etapa1',
-            'fecha_programacion_etapa2', 'hora_etapa2', 'auditores', 'iaf_md4_confirmado', 'estado'
-        ]
+        fields = ['cotizacion', 'nivel_auditoria', 'fecha_programacion_etapa1', 'hora_etapa1', 'auditores', 'iaf_md4_confirmado', 'estado']
 
-    def clean_fecha_programacion_etapa2(self):
-        fechas = self.cleaned_data['fecha_programacion_etapa2']
-        if fechas:
-            fechas_lista = [fecha.strip() for fecha in fechas.split(",") if fecha.strip()]
-            if len(fechas_lista) > 3:
-                raise forms.ValidationError("No puedes ingresar más de 3 fechas para la etapa 2.")
-            return fechas_lista
-        return []
+class FechaEtapa2Form(forms.ModelForm):
+    class Meta:
+        model = FechaEtapa2
+        fields = ['fecha', 'hora', 'dias_auditoria']
+
+FechaEtapa2FormSet = forms.modelformset_factory(FechaEtapa2, form=FechaEtapa2Form, extra=3, max_num=3)
