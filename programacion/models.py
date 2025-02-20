@@ -1,7 +1,7 @@
 from django.db import models
 
 class NivelAuditoriaCEA(models.Model):
-    nivel = models.CharField(max_length=200, unique=True)  # Aumentamos la longitud máxima a 200
+    nivel = models.CharField(max_length=200, unique=True)
     dias_etapa1 = models.FloatField(default=0.5)
     dias_etapa2 = models.FloatField(default=1.0)
 
@@ -10,7 +10,7 @@ class NivelAuditoriaCEA(models.Model):
 
 class Auditor(models.Model):
     nombre = models.CharField(max_length=100)
-    cedula = models.CharField(max_length=30, unique=True)  # Aumentamos la longitud máxima a 30
+    cedula = models.CharField(max_length=30, unique=True)
     cargo = models.CharField(max_length=50)
     telefono = models.CharField(max_length=20)
     correo = models.EmailField()
@@ -19,39 +19,40 @@ class Auditor(models.Model):
     def __str__(self):
         return f"{self.nombre} - {self.cargo}"
 
-def obtener_nivel_predeterminado():
-    try:
-        return NivelAuditoriaCEA.objects.first()
-    except NivelAuditoriaCEA.DoesNotExist:
-        return None
-
 class ProgramacionAuditoria(models.Model):
     cotizacion = models.ForeignKey('cotizaciones.Cotizacion', on_delete=models.CASCADE)
-    nivel_auditoria = models.ForeignKey('NivelAuditoriaCEA',  # O el nombre correcto de tu modelo
-        on_delete=models.CASCADE,)
-        #null=True,  # ¡Permitir NULL temporalmente!
-        #blank=True, # Permitir en el formulario
-        #default=None)
-    fecha_programacion_etapa1 = models.DateField()
+    nivel_auditoria = models.ForeignKey(NivelAuditoriaCEA, on_delete=models.SET_NULL, null=True, blank=True)
+    fecha_programacion_etapa1 = models.DateField(null=True, blank=True)
     hora_etapa1 = models.TimeField(default='00:00')
-    dias_etapa1 = models.FloatField()  # Permitimos que este valor sea modificado
-    auditores = models.ManyToManyField('Auditor')
+    auditores = models.ForeignKey(Auditor, on_delete=models.SET_NULL, null=True, blank=True)
     iaf_md4_confirmado = models.BooleanField(default=False)
     estado = models.CharField(max_length=20, choices=(
         ('Pendiente', 'Pendiente'),
         ('En Curso', 'En Curso'),
         ('Finalizada', 'Finalizada'),
         ('Cancelada', 'Cancelada'),
-    ))  # No establecemos un valor predeterminado para el campo "estado"
+    ), default='Pendiente')  # Valor predeterminado para "estado"
 
     def __str__(self):
         return f"Programación {self.id} - Cotización {self.cotizacion.id}"
 
+    def save(self, *args, **kwargs):
+        # Calcula dias_etapa1 al guardar, usando el nivel_auditoria
+        if self.nivel_auditoria:
+            self.dias_etapa1 = self.nivel_auditoria.dias_etapa1
+        super().save(*args, **kwargs)
+
 class FechaEtapa2(models.Model):
-    programacion = models.ForeignKey('ProgramacionAuditoria', on_delete=models.CASCADE, related_name='fechas_etapa2')
+    programacion = models.ForeignKey(ProgramacionAuditoria, on_delete=models.CASCADE, related_name='fechas_etapa2')
     fecha = models.DateField()
-    hora = models.TimeField()
-    dias_auditoria = models.FloatField(default=0.0)  # Añadimos un valor predeterminado de 0.0
+    hora = models.TimeField(default='00:00')  # Valor predeterminado para la hora
+    # dias_auditoria = models.FloatField(default=0.0)  # Este campo se calcula, no se guarda directamente
 
     def __str__(self):
         return str(self.fecha)
+
+    def save(self, *args, **kwargs):
+        # Calcula dias_auditoria al guardar, usando el nivel_auditoria de la programación
+        if self.programacion and self.programacion.nivel_auditoria:
+            self.dias_auditoria = self.programacion.nivel_auditoria.dias_etapa2
+        super().save(*args, **kwargs)

@@ -6,14 +6,11 @@ from django.template.loader import render_to_string
 import json
 import pdfkit
 from cotizaciones.models import Cotizacion
-
-from .forms import ProgramacionAuditoriaForm
-
-from .models import ProgramacionAuditoria
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from .forms import ProgramacionAuditoriaForm, FechaEtapa2Form, FechaEtapa2FormSet
 from .models import ProgramacionAuditoria, Auditor, FechaEtapa2
-from .forms import ProgramacionAuditoriaForm, FechaEtapa2FormSet
+from django.forms import modelformset_factory
+from django.contrib import messages
+
 
 
 
@@ -27,53 +24,40 @@ DIAS_AUDITORIA = {
 
 @login_required
 def listado_cotizaciones(request):
-    """ Muestra la lista de cotizaciones pendientes y permite programarlas. """
     cotizaciones = Cotizacion.objects.filter(estado="Pendiente")
-    usuarios = User.objects.all()  # Auditores disponibles
+    usuarios = User.objects.all()
 
     if request.method == "POST":
         cotizacion_id = request.POST.get("cotizacion_id")
-        fecha_etapa_1 = request.POST.get("fecha_etapa_1")
-        hora_etapa_1 = request.POST.get("hora_etapa_1")
-        fecha_etapa_2 = request.POST.get("fecha_etapa_2")
-        hora_etapa_2 = request.POST.get("hora_etapa_2")
-        auditor_id = request.POST.get("auditor")
-
         cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
+        auditor_id = request.POST.get("auditor")
         auditor = get_object_or_404(User, id=auditor_id)
 
-        # Crear o actualizar la programación
-        programacion, created = ProgramacionAuditoria.objects.get_or_create(cotizacion=cotizacion)
-
-        # Asignar las fechas y horas a la programación
-        programacion.fecha_etapa_1 = fecha_etapa_1
-        programacion.hora_etapa_1 = hora_etapa_1
-        programacion.fecha_etapa_2 = fecha_etapa_2
-        programacion.hora_etapa_2 = hora_etapa_2
+        programacion, _ = ProgramacionAuditoria.objects.get_or_create(cotizacion=cotizacion)
+        programacion.fecha_etapa_1 = request.POST.get("fecha_etapa_1")
+        programacion.hora_etapa_1 = request.POST.get("hora_etapa_1")
+        programacion.fecha_etapa_2 = request.POST.get("fecha_etapa_2")
+        programacion.hora_etapa_2 = request.POST.get("hora_etapa_2")
         programacion.auditor = auditor
+        programacion.save()
 
-        # Cambiar estado de la cotización
         cotizacion.estado = "Programada"
         cotizacion.save()
-
-        programacion.save()
 
         return redirect("listado_cotizaciones")
 
     return render(request, "programacion/listado.html", {"cotizaciones": cotizaciones, "usuarios": usuarios})
 
 
+
 @login_required
 def cambiar_estado(request, cotizacion_id):
-    """ Cambia el estado de una cotización. """
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
-
     if request.method == "POST":
         nuevo_estado = request.POST.get("estado")
         if nuevo_estado in ["Pendiente", "Aprobada", "Rechazada", "Programada"]:
             cotizacion.estado = nuevo_estado
             cotizacion.save()
-
     return redirect("listado_cotizaciones")
 
 
@@ -125,22 +109,42 @@ def imprimir_programacion(request, programacion_id):
     return response
 
 
+
+
 @login_required
 def programar_auditoria(request, cotizacion_id):
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
-    programacion, created = ProgramacionAuditoria.objects.get_or_create(cotizacion=cotizacion)
+    programacion, _ = ProgramacionAuditoria.objects.get_or_create(cotizacion=cotizacion)
+    FechaEtapa2FormSet = modelformset_factory(FechaEtapa2, form=FechaEtapa2Form, extra=1, can_delete=True)
 
     if request.method == 'POST':
         form = ProgramacionAuditoriaForm(request.POST, instance=programacion)
-        fecha_formset = FechaEtapa2FormSet(request.POST, instance=programacion)
-
+        fecha_formset = FechaEtapa2FormSet(request.POST, queryset=FechaEtapa2.objects.filter(programacion=programacion))
         if form.is_valid() and fecha_formset.is_valid():
-            programacion = form.save()
-            fecha_formset.save()
-            return redirect('listado_programaciones')
+            nivel_auditoria = form.cleaned_data.get('nivel_auditoria')
+            if not nivel_auditoria:
+                messages.error(request, 'Debe seleccionar un nivel de auditoría.')
+                return render(request, 'programacion/form_programacion.html', {
+                    'form': form,
+                    'fecha_formset': fecha_formset,
+                    'cotizacion': cotizacion,
+                    'titulo': 'Programar Auditoría',
+                    'boton_texto': 'Guardar Programación'
+                })
+            if nivel_auditoria == 'Nivel 3 con Formación de Instructores' and fecha_formset.total_form_count() > 3:
+                messages.error(request, 'No se pueden agregar más de 3 fechas para este nivel.')
+            else:
+                programacion = form.save()
+                for fecha in fecha_formset.save(commit=False):
+                    fecha.programacion = programacion
+                    fecha.save()
+                for fecha in fecha_formset.deleted_objects:
+                    fecha.delete()
+                messages.success(request, 'Programación guardada correctamente.')
+                return redirect('listado_programaciones')
     else:
         form = ProgramacionAuditoriaForm(instance=programacion)
-        fecha_formset = FechaEtapa2FormSet(instance=programacion)
+        fecha_formset = FechaEtapa2FormSet(queryset=FechaEtapa2.objects.filter(programacion=programacion))
 
     return render(request, 'programacion/form_programacion.html', {
         'form': form,
@@ -149,25 +153,3 @@ def programar_auditoria(request, cotizacion_id):
         'titulo': 'Programar Auditoría',
         'boton_texto': 'Guardar Programación'
     })
-
-
-@login_required
-def crear_programacion(request, cotizacion_id=None):
-    cotizacion = None
-    if cotizacion_id:
-        cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
-
-    if request.method == "POST":
-        form = ProgramacionAuditoriaForm(request.POST)
-        if form.is_valid():
-            programacion = form.save(commit=False)
-            if cotizacion:
-                programacion.cotizacion = cotizacion
-            programacion.save()
-            form.save_m2m()  # Guardar relaciones ManyToMany
-            return redirect("listado_programaciones")
-    else:
-        form = ProgramacionAuditoriaForm()
-
-    return render(request, "programacion/form_programacion.html", {"form": form, "cotizacion": cotizacion})
-

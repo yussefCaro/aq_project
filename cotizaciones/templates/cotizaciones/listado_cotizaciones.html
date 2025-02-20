@@ -26,7 +26,7 @@
         <td>{{ cotizacion.estado }}</td>
         <td><a href="{% url 'detalle_cotizacion' cotizacion.id %}">Ver</a></td>
         <td><a href="{% url 'editar_cotizacion' cotizacion.id %}">Modificar</a></td>
-        <td><a href="{% url 'crear_programacion' cotizacion.id %}" class="btn btn-sm btn-info">Crear Programación</a></td>
+        <td><a href="{% url 'programar_auditoria' cotizacion.id %}" class="btn btn-sm btn-info">Crear Programación</a></td>
 
     </tr>
     {% endfor %}

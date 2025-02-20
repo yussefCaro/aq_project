@@ -1,32 +1,132 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
+
 {% block content %}
-    <h1>{{ titulo }}</h1>
-    <h2>Cotización: {{ cotizacion.numero_servicio }}</h2>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1>{{ titulo }}</h1>
+            <h2>Cotización: {{ cotizacion.numero_servicio }}</h2>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
+            <form method="post">
+                {% csrf_token %}
 
-        <fieldset>
-            <legend>Fechas de Programación Etapa 2</legend>
-            {{ fecha_formset.management_form }}
-            {% for fecha_form in fecha_formset %}
-                <div class="fecha_etapa2">
-                    {{ fecha_form.as_p }}
-                    {% if not forloop.first %}
-                        <button type="button" class="eliminar_fecha">❌</button>
-                    {% endif %}
-                </div>
-            {% endfor %}
-            <button type="button" id="agregar_fecha_etapa2">Agregar otra fecha</button>
-        </fieldset>
+                <fieldset class="mb-3">
+                    <legend>Información de la cotización</legend>
+                    <div class="mb-3">
+                        {{ form.cotizacion.label_tag }}
+                        {{ form.cotizacion.as_widget }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.nivel_auditoria.label_tag }}
+                        {{ form.nivel_auditoria.as_widget }}
+                    </div>
+                </fieldset>
 
-        <button type="submit">{{ boton_texto }}</button>
-    </form>
+                <fieldset class="mb-3">
+                    <legend>Etapa 1</legend>
+                    <div class="mb-3">
+                        {{ form.fecha_programacion_etapa1.label_tag }}
+                        {{ form.fecha_programacion_etapa1.as_widget }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.hora_etapa1.label_tag }}
+                        {{ form.hora_etapa1.as_widget }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.auditores.label_tag }}
+                        {{ form.auditores.as_widget }}
+                    </div>
+                </fieldset>
 
-    <a href="{% url 'listado_programaciones' %}">Volver al listado</a>
+                <fieldset class="mb-3">
+                    <legend>Fechas de Programación Etapa 2</legend>
 
-    <script>
-        // ... (código JavaScript para agregar y eliminar campos, similar a lo que ya tienes)
-    </script>
+                    {{ fecha_formset.management_form }}
+
+                    <div id="fecha_form_container">
+                        {% for fecha_form in fecha_formset %}
+                            <div class="fecha_etapa2 mb-3">
+                                {{ fecha_form.as_p }}
+                                <button type="button" class="eliminar_fecha btn btn-danger btn-sm">❌</button>
+                            </div>
+                        {% empty %}
+                            <div class="fecha_etapa2 mb-3">
+                                {{ fecha_formset.empty_form.as_p }}
+                                <button type="button" class="eliminar_fecha btn btn-danger btn-sm">❌</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" id="agregar_fecha_etapa2" class="btn btn-primary">Agregar otra fecha</button>
+                </fieldset>
+
+                <fieldset class="mb-3">
+                    <legend>Información adicional</legend>
+                    <div class="mb-3">
+                        {{ form.iaf_md4_confirmado.label_tag }}
+                        {{ form.iaf_md4_confirmado.as_widget }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.estado.label_tag }}
+                        {{ form.estado.as_widget }}
+                    </div>
+                </fieldset>
+
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </form>
+
+            <a href="{% url 'listado_programaciones' %}">Volver al listado</a>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/script_formulario.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let totalFormsInput = document.querySelector("#id_fecha_etapa2-TOTAL_FORMS");
+        let container = document.getElementById("fecha_form_container");
+        let emptyFormHtml = `{{ fecha_formset.empty_form.as_p }}`.replace(/__prefix__/g, "0");
+
+        function addNewForm() {
+            let totalForms = parseInt(totalFormsInput.value, 10);
+            let newFormHtml = emptyFormHtml.replace(/-0-/g, `-${totalForms}-`).replace(/_0_/g, `_${totalForms}_`);
+
+            let newElement = document.createElement("div");
+            newElement.classList.add("fecha_etapa2", "mb-3");
+            newElement.innerHTML = newFormHtml;
+
+            let deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.classList.add("eliminar_fecha", "btn", "btn-danger", "btn-sm");
+            deleteButton.innerText = "❌";
+            deleteButton.onclick = function () {
+                if (totalForms > 1) {
+                    newElement.remove();
+                    totalFormsInput.value = parseInt(totalFormsInput.value, 10) - 1;
+                }
+            };
+
+            newElement.appendChild(deleteButton);
+            container.appendChild(newElement);
+            totalFormsInput.value = totalForms + 1;
+        }
+
+        document.getElementById("agregar_fecha_etapa2").addEventListener("click", addNewForm);
+
+        document.querySelectorAll(".eliminar_fecha").forEach(btn => {
+            btn.addEventListener("click", function () {
+                if (document.querySelectorAll(".fecha_etapa2").length > 1) {
+                    this.parentElement.remove();
+                    totalFormsInput.value = parseInt(totalFormsInput.value, 10) - 1;
+                }
+            });
+        });
+
+        if (container.children.length === 0) {
+            addNewForm();
+        }
+    });
+</script>
+
 {% endblock %}
