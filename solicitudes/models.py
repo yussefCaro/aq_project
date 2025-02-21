@@ -46,6 +46,7 @@ class Cliente(models.Model):
     certificado_conformidad = models.CharField(max_length=2, choices=CERTIFICADO_CONFORMIDAD_CHOICES, default="No")
     nombre_ente_certificador = models.CharField(max_length=100, blank=True, null=True)  # Se llena si es "Sí"
     fecha_solicitud = models.DateField(null=True, blank=True)  # Se establece solo cuando se envía la solicitud
+    observaciones = models.TextField(blank=True, null=True)
 
     def enviar_solicitud(self):
         """Método para establecer la fecha de solicitud al momento de enviar la solicitud."""

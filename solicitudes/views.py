@@ -1,11 +1,17 @@
 from django.shortcuts import redirect, get_object_or_404, render
-from django.http import HttpResponse
 from django.urls import reverse
 from .models import Cliente
 from .forms import ClienteForm, SolicitudForm
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from datetime import date
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Solicitud
+from django.contrib.auth.decorators import login_required, permission_required
+from django.http import HttpResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import Table, TableStyle
 
 
 # Vista para manejar el formulario de solicitud
@@ -86,43 +92,77 @@ def editar_cliente(request, cliente_id):
 
 
 # Generación de PDF con datos del cliente
-from django.contrib.auth.decorators import permission_required, login_required
 
 
 
+
+@login_required
 def generar_solicitud_pdf(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
-
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="solicitud_servicio.pdf"'
 
     pdf = canvas.Canvas(response, pagesize=letter)
-    pdf.setFont("Helvetica", 10)
+    width, height = letter
+    margen_x = 50
 
-    # Título
-    pdf.drawString(100, 750, "Solicitud de Auditoría")
+    # TÍTULO
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(200, height - 80, "Solicitud de Auditoría")  # Subir el título
+    pdf.line(margen_x, height - 90, width - margen_x, height - 90)  # Subir línea
 
-    # Datos del cliente
-    pdf.drawString(100, 730, f"NIT: {cliente.nit}")
-    pdf.drawString(100, 710, f"Nombre del Propietario: {cliente.nombre_propietario}")
-    pdf.drawString(100, 690, f"Establecimiento Comercial: {cliente.nombre_establecimiento}")
-    pdf.drawString(100, 670, f"Representante Legal: {cliente.representante_legal}")
-    pdf.drawString(100, 650, f"Ciudad: {cliente.ciudad}")
-    pdf.drawString(100, 630, f"Departamento: {cliente.departamento}")
-    pdf.drawString(100, 610, f"Correo Electrónico: {cliente.correo_electronico}")
-    pdf.drawString(100, 590, f"Teléfono: {cliente.telefono_celular}")
+    # Posición inicial de la tabla más abajo
+    y_inicio_tabla = height - 500
 
-    # Fecha de solicitud
-    fecha_solicitud = cliente.fecha_solicitud.strftime("%d/%m/%Y") if cliente.fecha_solicitud else "No registrada"
-    pdf.drawString(100, 570, f"Fecha de Solicitud: {fecha_solicitud}")
+    data = [
+        ["NIT:", cliente.nit],
+        ["Nombre del Propietario:", cliente.nombre_propietario],
+        ["Establecimiento Comercial:", cliente.nombre_establecimiento],
+        ["Representante Legal:", cliente.representante_legal],
+        ["Cédula de Ciudadanía:", cliente.cedula_ciudadania],
+        ["Ciudad:", cliente.ciudad],
+        ["Departamento:", cliente.departamento],
+        ["Dirección:", cliente.direccion],
+        ["Representante del Organismo:", cliente.representante_organismo],
+        ["Cargo:", cliente.cargo],
+        ["Correo Electrónico:", cliente.correo_electronico],
+        ["Teléfono Celular:", cliente.telefono_celular],
+        ["Nivel del CEA:", cliente.nivel_cea],
+        ["Categorías a Certificar:", str(cliente.categorias_certificar) if cliente.categorias_certificar else "No especificado"],
+        ["Cantidad de Vehículos:", cliente.cantidad_vehiculos],
+        ["Cantidad de Instructores:", cliente.cantidad_instructores],
+        ["Certificación de otro ente:", f"{cliente.certificado_conformidad} - {cliente.nombre_ente_certificador}"],
+        ["Fecha de Solicitud:", cliente.fecha_solicitud.strftime('%d/%m/%Y') if cliente.fecha_solicitud else "No registrada"],
+        ["Observaciones:", cliente.observaciones if cliente.observaciones else "Ninguna"]
+    ]
 
-    # Finalizar PDF
+    table = Table(data, colWidths=[200, 300])  # Ajuste de ancho
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+
+    table.wrapOn(pdf, width, height)
+    table.drawOn(pdf, margen_x, y_inicio_tabla)  # Mover la tabla más abajo
+
+    # FIRMA DEL REPRESENTANTE
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(margen_x + 50, 100, "_________________________")
+    pdf.drawString(margen_x + 50, 80, "Firma del Representante")
+
     pdf.showPage()
     pdf.save()
 
     return response
 
-from django.contrib.auth.decorators import permission_required
+
+
+
+
 
 @login_required
 def solicitudes_view(request):
@@ -130,11 +170,7 @@ def solicitudes_view(request):
     return render(request, 'programacion/solicitudes_list.html', {'solicitudes': solicitudes})
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Solicitud
-from django.contrib.auth.decorators import login_required, permission_required
 
-from django.http import HttpResponse
 
 @login_required
 
@@ -162,9 +198,7 @@ def listado_solicitudes(request):
     return render(request, 'programacion/listado.html', {'solicitudes': solicitudes})
 
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .models import Solicitud
+
 
 @login_required
 def solicitudes_pendientes(request):
