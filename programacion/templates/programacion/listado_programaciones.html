@@ -23,7 +23,7 @@
             {% for programacion in programaciones %}
                 <tr>
                     <td>{{ programacion.cotizacion.numero_servicio }}</td>
-                    <td>{{ programacion.cotizacion.cliente }}</td>
+                    <td>{{ programacion.cotizacion.solicitud.cliente.nombre_establecimiento }}</td>
                     <td>{{ programacion.nivel_auditoria }}</td>
                     <td>{{ programacion.fecha_programacion_etapa1 }}</td>
                     <td>{{ programacion.hora_etapa1 }}</td>

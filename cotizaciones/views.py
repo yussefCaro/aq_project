@@ -15,37 +15,30 @@ def listado_solicitudes(request):
     return render(request, "cotizaciones/listado_solicitudes.html", {"solicitudes": solicitudes})
 
 
-
-
 @login_required
 def crear_cotizacion(request, solicitud_id):
     solicitud = get_object_or_404(Solicitud, id=solicitud_id)
 
     if request.method == "POST":
+        print("POST DATA:", request.POST)  # Depuración para ver qué datos llegan
         form = CotizacionForm(request.POST)
+
         if form.is_valid():
-            numero_servicio = form.cleaned_data["numero_servicio"]
-
-            # Verificar si ya existe una cotización con el mismo número
-            if Cotizacion.objects.filter(numero_servicio=numero_servicio).exists():
-                return HttpResponseBadRequest("Error: Este número de servicio ya existe.")
-
-            # Crear la cotización
-            cotizacion = form.save(commit=False)
+            cotizacion = form.save(commit=False)  # Se guarda la cotización SIN el ManyToMany aún
             cotizacion.solicitud = solicitud
-            cotizacion.save()
+            cotizacion.save()  # Guardamos la cotización en la BD primero
 
-            # Cambiar estado de la solicitud
+            form.save_m2m()  # Ahora guardamos la relación ManyToMany
+
             solicitud.estado = "Cotizada"
             solicitud.save()
 
-            return redirect("listado_cotizaciones")  # Redirigir a la lista de cotizaciones
+            return redirect("listado_cotizaciones")
 
     else:
         form = CotizacionForm()
 
     return render(request, "cotizaciones/crear_cotizacion.html", {"form": form, "solicitud": solicitud})
-
 
 
 @login_required
@@ -85,16 +78,20 @@ def editar_cotizacion(request, cotizacion_id):
 
     if request.method == "POST":
         form = CotizacionForm(request.POST, instance=cotizacion)
+
         if form.is_valid():
-            cotizacion = form.save(commit=False)
-            cotizacion.precio_iva = Decimal(request.POST.get("precio_iva", 0))
-            cotizacion.precio_total = Decimal(request.POST.get("precio_total", 0))
-            cotizacion.save()
+            cotizacion = form.save(commit=False)  # Guardamos sin ManyToMany
+            cotizacion.save()  # Guardamos la cotización primero
+            form.save_m2m()  # Ahora guardamos las relaciones ManyToMany
+
+            print("Servicios seleccionados:", form.cleaned_data.get("tipo_servicio"))  # ✅ Solo se ejecuta si el formulario es válido
+
             return redirect("listado_cotizaciones")
 
     else:
         form = CotizacionForm(instance=cotizacion)
 
     return render(request, "cotizaciones/editar_cotizacion.html", {"form": form, "cotizacion": cotizacion})
+
 
 

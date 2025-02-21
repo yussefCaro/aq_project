@@ -66,7 +66,8 @@ def cambiar_estado(request, cotizacion_id):
 @login_required
 def listado_programaciones(request):
     """ Muestra la lista de programaciones de auditoría. """
-    programaciones = ProgramacionAuditoria.objects.select_related("cotizacion").all()
+    programaciones = ProgramacionAuditoria.objects.select_related("cotizacion__solicitud__cliente").all()
+
 
 
     # Obtener los grupos del usuario
@@ -85,12 +86,21 @@ def imprimir_programacion(request, programacion_id):
     """ Genera un PDF con la programación de auditoría. """
     programacion = get_object_or_404(ProgramacionAuditoria, id=programacion_id)
 
-    # Convertir la cadena JSON a lista si es necesario
-    if isinstance(programacion.fecha_programacion_etapa2, str):
-        programacion.fecha_programacion_etapa2 = json.loads(programacion.fecha_programacion_etapa2)
+    # ⚠️ Imprimir en la consola los tipos de servicio asociados
+    tipos_servicio = programacion.cotizacion.tipo_servicio.all()
+    print("Tipos de servicio:", list(tipos_servicio))  # Esto debe mostrar algo en la consola
+
+    # ✅ Obtener todas las fechas de etapa 2 relacionadas
+    fechas_etapa2 = FechaEtapa2.objects.filter(programacion=programacion)
 
     # Renderizar la plantilla
-    html = render_to_string("programacion/imprimir.html", {"programacion": programacion})
+    html = render_to_string(
+        "programacion/imprimir.html",
+        {
+            "programacion": programacion,
+            "fechas_etapa2": fechas_etapa2,
+        },
+    )
 
     # Opciones de pdfkit
     options = {

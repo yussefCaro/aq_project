@@ -1,6 +1,6 @@
 from django import forms
 from .models import ProgramacionAuditoria, Auditor, FechaEtapa2
-from django.forms.models import inlineformset_factory  # Importa inlineformset_factory
+from django.forms.models import inlineformset_factory
 
 class ProgramacionAuditoriaForm(forms.ModelForm):
     auditores = forms.ModelChoiceField(
@@ -11,21 +11,33 @@ class ProgramacionAuditoriaForm(forms.ModelForm):
     fecha_programacion_etapa1 = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date'})
     )
+    hora_etapa1 = forms.TimeField(  # 📌 Agregamos el widget para selector de hora
+        widget=forms.TimeInput(attrs={'type': 'time'}),
+        required=True
+    )
 
     class Meta:
         model = ProgramacionAuditoria
-        fields = ['cotizacion', 'nivel_auditoria', 'fecha_programacion_etapa1', 'hora_etapa1', 'auditores', 'iaf_md4_confirmado', 'estado']
+        fields = [
+            'cotizacion', 'nivel_auditoria', 'fecha_programacion_etapa1',
+            'hora_etapa1', 'auditores', 'iaf_md4_confirmado', 'estado'
+        ]
 
 class FechaEtapa2Form(forms.ModelForm):
     fecha = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    hora = forms.TimeField(  # 📌 También aquí agregamos el selector de hora
+        widget=forms.TimeInput(attrs={'type': 'time'}),
+        required=True
+    )
+
     class Meta:
         model = FechaEtapa2
-        fields = ['fecha', 'hora']  # dias_auditoria ya no está aquí
+        fields = ['fecha', 'hora']
 
 FechaEtapa2FormSet = inlineformset_factory(
-    ProgramacionAuditoria,  # Modelo principal
-    FechaEtapa2,  # Modelo relacionado
-    form=FechaEtapa2Form,  # Formulario para el modelo relacionado
-    extra=1,  # Número de formularios vacíos adicionales
-    max_num=3  # Número máximo de formularios
+    ProgramacionAuditoria,
+    FechaEtapa2,
+    form=FechaEtapa2Form,
+    extra=1,
+    max_num=3
 )
