@@ -82,51 +82,5 @@
 </div>
 
 <script src="{% static 'js/script_formulario.js' %}"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let totalFormsInput = document.querySelector("#id_fecha_etapa2-TOTAL_FORMS");
-        let container = document.getElementById("fecha_form_container");
-        let emptyFormHtml = `{{ fecha_formset.empty_form.as_p }}`.replace(/__prefix__/g, "0");
-
-        function addNewForm() {
-            let totalForms = parseInt(totalFormsInput.value, 10);
-            let newFormHtml = emptyFormHtml.replace(/-0-/g, `-${totalForms}-`).replace(/_0_/g, `_${totalForms}_`);
-
-            let newElement = document.createElement("div");
-            newElement.classList.add("fecha_etapa2", "mb-3");
-            newElement.innerHTML = newFormHtml;
-
-            let deleteButton = document.createElement("button");
-            deleteButton.type = "button";
-            deleteButton.classList.add("eliminar_fecha", "btn", "btn-danger", "btn-sm");
-            deleteButton.innerText = "❌";
-            deleteButton.onclick = function () {
-                if (totalForms > 1) {
-                    newElement.remove();
-                    totalFormsInput.value = parseInt(totalFormsInput.value, 10) - 1;
-                }
-            };
-
-            newElement.appendChild(deleteButton);
-            container.appendChild(newElement);
-            totalFormsInput.value = totalForms + 1;
-        }
-
-        document.getElementById("agregar_fecha_etapa2").addEventListener("click", addNewForm);
-
-        document.querySelectorAll(".eliminar_fecha").forEach(btn => {
-            btn.addEventListener("click", function () {
-                if (document.querySelectorAll(".fecha_etapa2").length > 1) {
-                    this.parentElement.remove();
-                    totalFormsInput.value = parseInt(totalFormsInput.value, 10) - 1;
-                }
-            });
-        });
-
-        if (container.children.length === 0) {
-            addNewForm();
-        }
-    });
-</script>
 
 {% endblock %}

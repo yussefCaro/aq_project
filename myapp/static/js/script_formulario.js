@@ -1,36 +1,72 @@
 document.addEventListener("DOMContentLoaded", function () {
+    let totalFormsInput = document.querySelector("#id_fechaetapa2_set-TOTAL_FORMS");
     let container = document.getElementById("fecha_form_container");
-    let emptyFormElement = document.getElementById("empty-form");
-    let totalForms = document.querySelector("#id_fechaetapa2_set-TOTAL_FORMS");
+    let emptyFormHtml = container.getAttribute("data-empty-form");
+    let maxForms = 3;
 
-    console.log("Container:", container);
-    console.log("Empty Form:", emptyFormElement);
-    console.log("Total Forms:", totalForms);
+    function updateFormIndexes() {
+        let forms = container.querySelectorAll(".fecha_etapa2");
+        let visibleForms = Array.from(forms).filter(form => form.style.display !== "none");
 
-    if (!emptyFormElement) {
-        console.error("Error: No se encontró el elemento con ID 'empty-form'");
-        return;
+        visibleForms.forEach((form, index) => {
+            form.querySelectorAll("[name]").forEach(field => {
+                let name = field.getAttribute("name");
+                let id = field.getAttribute("id");
+
+                if (name) {
+                    field.setAttribute("name", name.replace(/fechaetapa2_set-\d+-/, `fechaetapa2_set-${index}-`));
+                }
+                if (id) {
+                    field.setAttribute("id", id.replace(/fechaetapa2_set-\d+-/, `fechaetapa2_set-${index}-`));
+                }
+            });
+        });
+
+        totalFormsInput.value = visibleForms.length;
     }
-    if (!totalForms) {
-        console.error("Error: No se encontró el elemento con ID 'id_fechaetapa2_set-TOTAL_FORMS'");
-        return;
+
+    function addDeleteButton(element) {
+    let deleteButton = element.querySelector(".eliminar_fecha");
+
+    if (!deleteButton) {  // Solo agregar si no existe
+        deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.classList.add("eliminar_fecha", "btn", "btn-danger", "btn-sm", "ms-2");
+        deleteButton.innerText = "❌";
+
+        deleteButton.onclick = function () {
+            let hiddenDeleteInput = element.querySelector("input[name*='DELETE']");
+            if (hiddenDeleteInput) {
+                hiddenDeleteInput.checked = true;
+            }
+            element.style.display = "none";
+            updateFormIndexes();
+        };
+
+        element.appendChild(deleteButton);
     }
+}
 
-    let emptyForm = emptyFormElement.innerHTML;
 
-    document.getElementById("agregar_fecha_etapa2").addEventListener("click", function () {
-        let newForm = document.createElement("div");
-        newForm.innerHTML = emptyForm.replace(/__prefix__/g, totalForms.value);
-        newForm.classList.add("fecha_etapa2", "mb-3");
-        container.appendChild(newForm);
-
-        totalForms.value = parseInt(totalForms.value) + 1;
-    });
-
-    container.addEventListener("click", function (event) {
-        if (event.target.classList.contains("eliminar_fecha")) {
-            event.target.closest(".fecha_etapa2").remove();
-            totalForms.value = parseInt(totalForms.value) - 1;
+    function addNewForm() {
+        let totalForms = parseInt(totalFormsInput.value, 10);
+        if (totalForms >= maxForms) {
+            alert("No puedes agregar más de 3 fechas.");
+            return;
         }
-    });
+
+        let newElement = document.createElement("div");
+        newElement.classList.add("fecha_etapa2", "mb-3");
+        newElement.innerHTML = emptyFormHtml.replace(/__prefix__/g, totalForms);
+        container.appendChild(newElement);
+        addDeleteButton(newElement);
+
+        totalFormsInput.value = totalForms + 1;
+    }
+
+    document.getElementById("agregar_fecha_etapa2").addEventListener("click", addNewForm);
+
+    document.querySelectorAll(".fecha_etapa2").forEach(form => addDeleteButton(form));
+
+    updateFormIndexes(); // Asegurar que los índices están bien desde el inicio
 });

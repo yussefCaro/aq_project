@@ -66,7 +66,8 @@ def cambiar_estado(request, cotizacion_id):
 @login_required
 def listado_programaciones(request):
     """ Muestra la lista de programaciones de auditoría. """
-    programaciones = ProgramacionAuditoria.objects.select_related("cotizacion").filter(estado="Programada")
+    programaciones = ProgramacionAuditoria.objects.select_related("cotizacion").all()
+
 
     # Obtener los grupos del usuario
     grupos_usuario = request.user.groups.values_list("name", flat=True)
@@ -109,29 +110,22 @@ def imprimir_programacion(request, programacion_id):
     return response
 
 
-
-
 @login_required
 def programar_auditoria(request, cotizacion_id):
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
     programacion, _ = ProgramacionAuditoria.objects.get_or_create(cotizacion=cotizacion)
-    FechaEtapa2FormSet = modelformset_factory(FechaEtapa2, form=FechaEtapa2Form, extra=1, can_delete=True)
+
+    FechaEtapa2FormSet = modelformset_factory(FechaEtapa2, form=FechaEtapa2Form, extra=1, max_num=3, can_delete=True)
 
     if request.method == 'POST':
         form = ProgramacionAuditoriaForm(request.POST, instance=programacion)
         fecha_formset = FechaEtapa2FormSet(request.POST, queryset=FechaEtapa2.objects.filter(programacion=programacion))
+
         if form.is_valid() and fecha_formset.is_valid():
             nivel_auditoria = form.cleaned_data.get('nivel_auditoria')
             if not nivel_auditoria:
                 messages.error(request, 'Debe seleccionar un nivel de auditoría.')
-                return render(request, 'programacion/form_programacion.html', {
-                    'form': form,
-                    'fecha_formset': fecha_formset,
-                    'cotizacion': cotizacion,
-                    'titulo': 'Programar Auditoría',
-                    'boton_texto': 'Guardar Programación'
-                })
-            if nivel_auditoria == 'Nivel 3 con Formación de Instructores' and fecha_formset.total_form_count() > 3:
+            elif nivel_auditoria == 'Nivel 3 con Formación de Instructores' and fecha_formset.total_form_count() > 3:
                 messages.error(request, 'No se pueden agregar más de 3 fechas para este nivel.')
             else:
                 programacion = form.save()
@@ -140,6 +134,7 @@ def programar_auditoria(request, cotizacion_id):
                     fecha.save()
                 for fecha in fecha_formset.deleted_objects:
                     fecha.delete()
+
                 messages.success(request, 'Programación guardada correctamente.')
                 return redirect('listado_programaciones')
     else:
