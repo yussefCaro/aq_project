@@ -65,7 +65,14 @@
         </tr>
         <tr>
             <th>Categorías</th>
-            <td>{{ programacion.cotizacion.solicitud.cliente.categorias_certificar }}</td>
+            <td>
+                {% for categoria in programacion.cotizacion.solicitud.cliente.categorias_certificar.all %}
+                    {{ categoria.nombre }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    No especificado
+                {% endfor %}
+            </td>
+
         </tr>
         <tr>
             <th>Observaciones</th>
