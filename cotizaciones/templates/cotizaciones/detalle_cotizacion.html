@@ -30,7 +30,13 @@
             {% endfor %}
         </p>
     <p><strong>Nivel del CEA:</strong> {{ cliente.nivel_cea }}</p>
-    <p><strong>Categorías:</strong> {{ cliente.categorias_certificar }}</p>
+    <p><strong>Categorías:</strong>
+    {% for categoria in cliente.categorias_certificar.all %}
+        {{ categoria.nombre }}{% if not forloop.last %}, {% endif %}
+    {% empty %}
+        No especificado
+    {% endfor %}
+</p>
 
 {% else %}
     <p>No se encontró la cotización.</p>

@@ -39,12 +39,8 @@ def enviar_solicitud(request, cliente_id):
             nueva_solicitud.cliente = cliente  # Asignar cliente
             nueva_solicitud.fecha_solicitud = date.today()
             nueva_solicitud.estado = 'Pendiente'
-            print("Nueva solicitud:", nueva_solicitud)  # Verifica los datos antes de guardar
             nueva_solicitud.save()
             return redirect('listado_solicitudes')
-        else:
-            print("Errores en el formulario:", form.errors)  # Se imprime si el formulario no es válido
-
 
     else:
         form = SolicitudForm(initial={'fecha_solicitud': date.today()})
@@ -128,7 +124,8 @@ def generar_solicitud_pdf(request, cliente_id):
         ["Correo Electrónico:", cliente.correo_electronico],
         ["Teléfono Celular:", cliente.telefono_celular],
         ["Nivel del CEA:", cliente.nivel_cea],
-        ["Categorías a Certificar:", str(cliente.categorias_certificar) if cliente.categorias_certificar else "No especificado"],
+        ["Categorías a Certificar:", ", ".join(categoria.nombre for categoria in
+                                               cliente.categorias_certificar.all()) if cliente.categorias_certificar.exists() else "No especificado"],
         ["Cantidad de Vehículos:", cliente.cantidad_vehiculos],
         ["Cantidad de Instructores:", cliente.cantidad_instructores],
         ["Certificación de otro ente:", f"{cliente.certificado_conformidad} - {cliente.nombre_ente_certificador}"],

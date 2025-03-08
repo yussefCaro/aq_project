@@ -24,7 +24,17 @@
         <tr><th>Departamento</th><td>{{ programacion.cotizacion.cliente.departamento }}</td></tr>
         <tr><th>Tipo de Servicio</th><td>Otorgamiento inicial</td></tr>
         <tr><th>Nivel CEA</th><td>{{ programacion.cotizacion.cliente.nivel_cea }}</td></tr>
-        <tr><th>Categorías</th><td>{{ programacion.cotizacion.categorias }}</td></tr>
+        <tr>
+            <th>Categorías</th>
+            <td>
+                {% for categoria in programacion.cotizacion.categorias.all %}
+                    {{ categoria.nombre }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    No especificado
+                {% endfor %}
+            </td>
+        </tr>
+
         <tr><th>Observaciones</th><td>{{ programacion.cotizacion.observaciones }}</td></tr>
         <tr><th>Auditor</th><td>{{ programacion.auditor.get_full_name|default:programacion.auditor.username }}</td></tr>
         <tr><th>Fecha y Hora</th><td>{{ programacion.fecha_etapa_1 }} - {{ programacion.hora_etapa_1 }}</td></tr>
