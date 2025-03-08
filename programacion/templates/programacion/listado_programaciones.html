@@ -43,11 +43,7 @@
                                 </ul>
                             </td>
                             <td>
-                                <ul class="list-unstyled">
-                                    {% for auditor in programacion.auditores.all %}
-                                        <li>👤 {{ auditor.nombre }} {{ auditor.apellido }}</li>
-                                    {% endfor %}
-                                </ul>
+                                👤 {{ programacion.auditores.nombre }} {{ programacion.auditores.apellido }}
                             </td>
                             <td class="text-center">
                                 {% if programacion.iaf_md4_confirmado %}

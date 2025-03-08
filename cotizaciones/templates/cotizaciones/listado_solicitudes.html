@@ -1,36 +1,53 @@
-<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>listado_solicitudes.html</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
 {% extends 'layouts/base.html' %}
+
+{% block title %}Solicitudes para Cotización{% endblock %}
+
 {% block content %}
-<body >
-  <h2 class="text-primary">Solicitudes para Cotización</h2>
-<table class="table table-bordered">
-    <tr>
-        <th>ID</th>
-        <th>Cliente</th>
-        <th>NIT</th>
-        <th>Estado</th>
-        <th>Acción</th>
-    </tr>
-    {% for solicitud in solicitudes %}
-    <tr>
-        <td>{{ solicitud.id }}</td>
-        <td>{{ solicitud.cliente.nombre_establecimiento }}</td>
-        <td>{{ solicitud.cliente.nit }}</td>  <!-- Mostramos el NIT -->
-        <td>{{ solicitud.estado }}</td>
-        <td><a href="{% url 'crear_cotizacion' solicitud.id %}">Crear Cotización</a></td>
-    </tr>
-    {% endfor %}
-</table>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+<div class="container mt-4">
+    <div class="card shadow p-4">
+        <h2 class="text-center text-primary">Solicitudes para Cotización</h2>
+
+        {% if solicitudes %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>NIT</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for solicitud in solicitudes %}
+                            <tr>
+                                <td>{{ solicitud.id }}</td>
+                                <td>{{ solicitud.cliente.nombre_establecimiento }}</td>
+                                <td>{{ solicitud.cliente.nit }}</td>
+                                <td>
+                                    <span class="badge {% if solicitud.estado == 'Pendiente' %}bg-warning{% elif solicitud.estado == 'Aprobada' %}bg-success{% elif solicitud.estado == 'Rechazada' %}bg-danger{% else %}bg-info{% endif %}">
+                                        {{ solicitud.estado }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'crear_cotizacion' solicitud.id %}" class="btn btn-sm btn-primary">Crear Cotización</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-danger text-center">
+                No hay solicitudes disponibles.
+            </div>
+        {% endif %}
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-</body>
 {% endblock %}
-</html>
