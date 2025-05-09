@@ -43,7 +43,11 @@
                                 </ul>
                             </td>
                             <td>
-                                👤 {{ programacion.auditores.nombre }} {{ programacion.auditores.apellido }}
+                                {% if programacion.auditores %}
+                                    👤 {{ programacion.auditores.user.get_full_name|default:programacion.auditores.user.username }}
+                                {% else %}
+                                    <span class="text-muted">Sin asignar</span>
+                                {% endif %}
                             </td>
                             <td class="text-center">
                                 {% if programacion.iaf_md4_confirmado %}
