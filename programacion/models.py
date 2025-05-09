@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class NivelAuditoriaCEA(models.Model):
     nivel = models.CharField(max_length=200, unique=True)
@@ -8,16 +9,18 @@ class NivelAuditoriaCEA(models.Model):
     def __str__(self):
         return self.nivel
 
+
+
 class Auditor(models.Model):
-    nombre = models.CharField(max_length=100)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     cedula = models.CharField(max_length=30, unique=True)
     cargo = models.CharField(max_length=50)
     telefono = models.CharField(max_length=20)
-    correo = models.EmailField()
     iaf_md4_confirmado = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.nombre} - {self.cargo}"
+        return f"{self.user.get_full_name()} - {self.cargo}"
+
 
 class ProgramacionAuditoria(models.Model):
     cotizacion = models.ForeignKey('cotizaciones.Cotizacion', on_delete=models.CASCADE)

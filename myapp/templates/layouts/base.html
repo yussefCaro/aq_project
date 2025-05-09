@@ -37,6 +37,14 @@
                         <li class="nav-item"><a class="nav-link" href="{% url 'listado_programaciones' %}">Programaciones</a></li>
                     {% endif %}
 
+                    {% for group in user.groups.all %}
+                        {% if group.name == 'Auditores' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'dashboard_auditor' %}">Documentación de Auditores</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+
                     <li class="nav-item"><a class="nav-link text-danger" href="{% url 'logout' %}">Cerrar sesión</a></li>
                 {% else %}
                     <!-- Sección para usuarios NO autenticados -->

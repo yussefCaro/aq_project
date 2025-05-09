@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'programacion',
     'cotizaciones',
     'django.contrib.humanize',
+    'documentacion_auditores',
 
 ]
 

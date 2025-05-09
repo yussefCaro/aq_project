@@ -12,7 +12,7 @@ DIAS_AUDITORIA = {
 
 class Cotizacion(models.Model):
     solicitud = models.ForeignKey(Solicitud, on_delete=models.CASCADE, related_name="cotizaciones")
-    numero_servicio = models.CharField(max_length=10, unique=True, help_text="Formato: XXXX-X")
+    numero_servicio = models.CharField(max_length=100, unique=True)
     fecha_cotizacion = models.DateField(null=True, blank=True)
     tipo_servicio = models.ManyToManyField("TipoServicio")
 

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Plan de Auditoría</title>
+    <style>
+        body { font-family: sans-serif; font-size: 12px; }
+        .title { font-size: 18px; font-weight: bold; }
+        .section { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="title">PLAN DE AUDITORÍA</div>
+
+    <div class="section">
+        <strong>N° Servicio:</strong> {{ plan.programacion.numero_servicio }}<br>
+        <strong>Razón Social:</strong> {{ plan.programacion.nombre_razon_social }}<br>
+        <strong>Representante Legal:</strong> {{ plan.programacion.representante_legal }}<br>
+        <strong>Dirección:</strong> {{ plan.programacion.direccion }} - {{ plan.programacion.ciudad }}, {{ plan.programacion.departamento }}<br>
+        <strong>Correo:</strong> {{ plan.programacion.correo }}<br>
+        <strong>Auditor:</strong> {{ plan.auditor.get_full_name }}<br>
+        <strong>IAF MD4 Verificado:</strong> {{ plan.iaf_md4_verificado|yesno:"Sí,No" }}<br>
+        <strong>Fecha aprobación:</strong> {{ plan.fecha_aprobacion }}
+    </div>
+
+    <div class="section">
+        <strong>Observaciones:</strong><br>
+        {{ plan.observaciones }}
+    </div>
+</body>
+</html>
