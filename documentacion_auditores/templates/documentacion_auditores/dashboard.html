@@ -2,7 +2,7 @@
 <ul>
   {% for prog in programaciones %}
     <li>
-      Servicio: {{ prog.numero_servicio }} |
+      Servicio: {{ prog.cotizacion.numero_servicio }} |
       <a href="{% url 'crear_plan' prog.id %}">Crear Plan</a> |
       <a href="{% url 'crear_acta' prog.id %}">Crear Acta</a>
     </li>
@@ -19,8 +19,8 @@
   </tr>
   {% for plan in planes %}
   <tr>
-    <td>{{ plan.programacion.numero_servicio }}</td>
-    <td>{{ plan.programacion.nombre_razon_social }}</td>
+    <td>{{ plan.programacion.cotizacion.numero_servicio }}</td>
+    <td>{{ plan.programacion.cotizacion.solicitud.cliente.nombre_establecimiento }}</td>
     <td>{{ plan.fecha_aprobacion }}</td>
     <td>
       <a href="{% url 'imprimir_plan' plan.id %}" target="_blank" class="btn btn-sm btn-primary">
@@ -29,4 +29,19 @@
     </td>
   </tr>
   {% endfor %}
+
+{% for programacion in programaciones %}
+  <tr>
+    <td>{{ programacion.cotizacion.numero_servicio }}</td>
+    <!-- Otros campos -->
+    <td>
+      <a href="{% url 'imprimir_programacion' programacion.id %}" class="btn btn-sm btn-secondary" target="_blank">
+        🖨️ Carta de Programación (PDF)
+      </a>
+    </td>
+  </tr>
+{% endfor %}
+
+
+
 </table>

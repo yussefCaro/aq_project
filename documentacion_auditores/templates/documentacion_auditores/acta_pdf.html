@@ -13,7 +13,7 @@
     <div class="title">ACTA DE APERTURA Y CIERRE</div>
 
     <div class="section">
-        <strong>N° Servicio:</strong> {{ acta.programacion.numero_servicio }}<br>
+        <strong>N° Servicio:</strong> {{ acta.programacion.cotizacion.numero_servicio }}<br>
         <strong>Razón Social:</strong> {{ acta.programacion.nombre_razon_social }}<br>
         <strong>Representante Legal:</strong> {{ acta.representante_legal_nombre }} ({{ acta.representante_legal_cargo }})<br>
         <strong>Auditor:</strong> {{ acta.programacion.auditor.get_full_name }}
@@ -33,7 +33,7 @@
 </html>
 {% for acta in actas %}
 <tr>
-    <td>{{ acta.programacion.numero_servicio }}</td>
+    <td>{{ acta.programacion.cotizacion.numero_servicio }}</td>
     <td>{{ acta.fecha_inicio }}</td>
     <td>
         <a href="{% url 'imprimir_acta' acta.id %}" target="_blank" class="btn btn-sm btn-success">

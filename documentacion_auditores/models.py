@@ -13,7 +13,7 @@ class PlanAuditoria(models.Model):
     archivo_vehiculos_instructores = models.FileField(upload_to='documentacion/vehiculos_instructores/', null=True, blank=True)
 
     def __str__(self):
-        return f"Plan Auditoría - {self.programacion.numero_servicio}"
+        return f"Plan Auditoría - {self.programacion.cotizacion.numero_servicio}"
 
 class ActaAuditoria(models.Model):
     programacion = models.OneToOneField(ProgramacionAuditoria, on_delete=models.CASCADE)
@@ -27,7 +27,7 @@ class ActaAuditoria(models.Model):
     fecha_cierre = models.DateField()
 
     def __str__(self):
-        return f"Acta Auditoría - {self.programacion.numero_servicio}"
+        return f"Acta Auditoría - {self.programacion.cotizacion.numero_servicio}"
 
 
 #controlar la asistencia como registros separados
