@@ -13,6 +13,7 @@ class ClienteForm(forms.ModelForm):
             'nit': forms.TextInput(attrs={'placeholder': 'Nit del cliente'}),
             'telefono_fijo': forms.TextInput(attrs={'placeholder': 'Teléfono Fijo (opcional)'}),
             'categorias_certificar': CheckboxSelectMultiple(),
+            'fecha_solicitud': forms.DateInput(attrs={'type': 'date'}),
             # Puedes agregar más widgets aquí si es necesario.
         }
 

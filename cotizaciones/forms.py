@@ -24,9 +24,17 @@ class CotizacionForm(forms.ModelForm):
         required=True
     )
 
-
-
     class Meta:
         model = Cotizacion
-        fields = ['numero_servicio', 'tipo_servicio', 'precio_neto', 'precio_iva', 'precio_total', 'estado','fecha_cotizacion' ]
-
+        fields = [
+            'numero_servicio',
+            'tipo_servicio',
+            'precio_neto',
+            'precio_iva',
+            'precio_total',
+            'estado',
+            'fecha_cotizacion'
+        ]
+        widgets = {
+            'fecha_cotizacion': forms.DateInput(attrs={'type': 'date'}),
+        }

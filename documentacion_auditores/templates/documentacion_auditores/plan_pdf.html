@@ -5,27 +5,150 @@
     <title>Plan de Auditoría</title>
     <style>
         body { font-family: sans-serif; font-size: 12px; }
-        .title { font-size: 18px; font-weight: bold; }
+        .title { font-size: 18px; font-weight: bold; margin-bottom: 20px; }
         .section { margin-top: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #333; padding: 6px; }
+        th { background: #f0f0f0; }
     </style>
 </head>
 <body>
     <div class="title">PLAN DE AUDITORÍA</div>
 
-    <div class="section">
-        <strong>N° Servicio:</strong> {{ plan.programacion.cotizacion.numero_servicio }}<br>
-        <strong>Razón Social:</strong> {{ plan.programacion.nombre_razon_social }}<br>
-        <strong>Representante Legal:</strong> {{ plan.programacion.representante_legal }}<br>
-        <strong>Dirección:</strong> {{ plan.programacion.direccion }} - {{ plan.programacion.ciudad }}, {{ plan.programacion.departamento }}<br>
-        <strong>Correo:</strong> {{ plan.programacion.correo }}<br>
-        <strong>Auditor:</strong> {{ plan.auditor.get_full_name }}<br>
-        <strong>IAF MD4 Verificado:</strong> {{ plan.iaf_md4_verificado|yesno:"Sí,No" }}<br>
-        <strong>Fecha aprobación:</strong> {{ plan.fecha_aprobacion }}
-    </div>
+    <p>Actividades encontradas: {{ hora_actividades|length }}</p>
+    <p>Cliente ID: {{ programacion.cotizacion.cliente.id }}</p>
+    <p>Cliente nombre: {{ programacion.cotizacion.solicitud.cliente.nombre_propietario }}</p>
+    <p>Cliente representante legal: {{ programacion.cotizacion.cliente.representante_legal }}</p>
 
-    <div class="section">
-        <strong>Observaciones:</strong><br>
-        {{ plan.observaciones }}
-    </div>
+
+
+    <table>
+      <tr>
+        <th>Número de Servicio</th>
+        <td>{{ programacion.cotizacion.numero_servicio }}</td>
+      </tr>
+      <tr>
+        <th>Nombre del Propietario y/o Razón Social</th>
+        <td>{{ programacion.cotizacion.solicitud.cliente.nombre_propietario }}</td>
+      </tr>
+      <tr>
+        <th>Representante Legal</th>
+        <td>{{ programacion.cotizacion.solicitud.cliente.representante_legal }}</td>
+      </tr>
+      <tr>
+        <th>Nombre del Establecimiento Comercial</th>
+        <td>{{ programacion.cotizacion.solicitud.cliente.nombre_establecimiento }}</td>
+      </tr>
+      <tr>
+        <th>NIT</th>
+        <td>{{ programacion.cotizacion.solicitud.cliente.nit }}</td>
+      </tr>
+      <tr>
+        <th>Dirección</th>
+        <td>{{ programacion.cotizacion.solicitud.cliente.direccion }}</td>
+      </tr>
+      <tr>
+        <th>Ciudad</th>
+        <td>{{ programacion.cotizacion.solicitud.cliente.ciudad }}</td>
+      </tr>
+      <tr>
+        <th>Departamento</th>
+        <td>{{ programacion.cotizacion.solicitud.cliente.departamento }}</td>
+      </tr>
+      <tr>
+        <th>Teléfono</th>
+        <td>{{ programacion.cotizacion.solicitud.cliente.telefono_celular }}</td>
+      </tr>
+      <tr>
+        <th>Correo</th>
+        <td>{{ programacion.cotizacion.solicitud.cliente.correo_electronico }}</td>
+      </tr>
+      <tr>
+        <th>Tipo de Servicio</th>
+        <td>
+          {% for tipo in programacion.cotizacion.tipo_servicio.all %}
+            {{ tipo.nombre }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+      </tr>
+      <tr>
+        <th>Fechas de la carta de programación</th>
+        <td>
+          {% for fecha in programacion.fechas_etapa2.all %}
+            {{ fecha.fecha|date:"Y-m-d" }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+      </tr>
+      <tr>
+        <th>Nivel del CEA</th>
+        <td>{{ programacion.nivel_auditoria }}</td>
+      </tr>
+      <tr>
+        <th>Categorías</th>
+        <td>
+          {% for cat in programacion.cotizacion.solicitud.cliente.categorias_certificar.all %}
+            {{ cat.nombre }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+      </tr>
+      <tr>
+        <th>Checkpoint IAF MD4</th>
+        <td>
+          {% if plan.iaf_md4_verificado %}
+            <span>✔</span>
+          {% else %}
+            <span>✘</span>
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Observaciones</th>
+        <td>{{ plan.observaciones }}</td>
+      </tr>
+      <tr>
+        <th>Auditor</th>
+        <td>{{ plan.auditor.get_full_name }}</td>
+      </tr>
+    </table>
+
+    <h4>Firma del Auditado</h4>
+    <table>
+      <tr>
+        <th>Nombre:</th>
+        <td>{{ programacion.cotizacion.cliente.representante_legal }}</td>
+      </tr>
+      <tr>
+        <th>Firma:</th>
+        <td><!-- Espacio para la firma manuscrita --></td>
+      </tr>
+      <tr>
+        <th>Fecha de aprobación:</th>
+        <td>{{ plan.fecha_aprobacion|date:"Y-m-d" }}</td>
+      </tr>
+    </table>
+
+    <h4>Programación de Actividades (Nivel del CEA: {{ programacion.nivel_auditoria }})</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Actividad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for hora_act in hora_actividades %}
+            <tr>
+                <td>{{ hora_act.fecha|date:"Y-m-d" }}</td>
+                <td>{{ hora_act.hora|time:"H:i" }}</td>
+                <td>{{ hora_act.actividad.descripcion }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No hay actividades registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

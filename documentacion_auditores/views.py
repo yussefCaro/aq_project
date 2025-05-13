@@ -179,12 +179,23 @@ def crear_acta(request, programacion_id):
 @user_passes_test(auditor_check)
 def imprimir_plan(request, plan_id):
     plan = get_object_or_404(PlanAuditoria, id=plan_id)
-    html_string = render_to_string('documentacion_auditores/plan_pdf.html', {'plan': plan})
+    programacion = plan.programacion
+    hora_actividades = plan.horas_actividades.all().order_by('fecha', 'hora')
+    html_string = render_to_string(
+        'documentacion_auditores/plan_pdf.html',
+        {
+            'plan': plan,
+            'programacion': programacion,
+            'hora_actividades': hora_actividades,
+        }
+    )
     html = HTML(string=html_string)
     pdf_file = html.write_pdf()
     response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'filename=PlanAuditoria_{plan.programacion.cotizacion.numero_servicio}.pdf'
+    response['Content-Disposition'] = f'filename=PlanAuditoria_{programacion.cotizacion.numero_servicio}.pdf'
     return response
+
+
 
 @login_required
 @user_passes_test(auditor_check)

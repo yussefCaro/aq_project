@@ -8,6 +8,12 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
 
+{% if form.errors %}
+  <div class="alert alert-danger">
+    {{ form.errors }}
+  </div>
+{% endif %}
+
 <body>
 
 <main class="container">
