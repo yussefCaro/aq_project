@@ -2,7 +2,8 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-from programacion.models import ProgramacionAuditoria  # Ajusta al nombre real de tu modelo
+from programacion.models import ProgramacionAuditoria, NivelAuditoriaCEA
+
 
 class PlanAuditoria(models.Model):
     programacion = models.OneToOneField(ProgramacionAuditoria, on_delete=models.CASCADE)
@@ -37,4 +38,29 @@ class AsistenteActa(models.Model):
     cargo = models.CharField(max_length=100)
     firma_apertura = models.ImageField(upload_to='documentacion/firmas/', null=True, blank=True)
     firma_cierre = models.ImageField(upload_to='documentacion/firmas/', null=True, blank=True)
+
+# Modelo para la plantilla de actividades por nivel CEA
+
+class ActividadCEA(models.Model):
+    nivel = models.ForeignKey(NivelAuditoriaCEA, on_delete=models.CASCADE)
+    descripcion = models.TextField("Proceso/Actividad/Requisito por Auditar")
+    orden = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.nivel} - {self.descripcion[:30]}"
+
+
+# Modelo para registrar la hora de cada actividad en el plan
+class HoraActividadPlan(models.Model):
+    plan = models.ForeignKey(PlanAuditoria, on_delete=models.CASCADE, related_name='horas_actividades')
+    actividad = models.ForeignKey(ActividadCEA, on_delete=models.CASCADE)
+    fecha = models.DateField()
+    hora = models.TimeField()
+
+    def __str__(self):
+        return f"{self.actividad.proceso} - {self.fecha} {self.hora}"
+
+
+
+
 

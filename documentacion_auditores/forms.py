@@ -16,3 +16,13 @@ class AsistenteActaForm(forms.ModelForm):
     class Meta:
         model = AsistenteActa
         fields = ['nombre', 'cargo', 'firma_apertura', 'firma_cierre']
+
+
+from django.forms import modelformset_factory
+from .models import HoraActividadPlan
+
+HoraActividadPlanFormSet = modelformset_factory(
+    HoraActividadPlan,
+    fields=('fecha', 'hora'),
+    extra=0
+)

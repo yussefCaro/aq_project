@@ -1,6 +1,68 @@
-<h2>Formulario Plan de Auditoría</h2>
+{% extends "layouts/base.html" %}
+{% load static index %}
+
+{% block content %}
+
+<p>Actividades: {{ actividades|length }}</p>
+<p>Fechas disponibles: {{ fechas_disponibles|length }}</p>
+<p>Formset TOTAL_FORMS: {{ formset.management_form.TOTAL_FORMS.value }}</p>
+<h2>Plan de Auditoría - Servicio {{ programacion.cotizacion.numero_servicio }}</h2>
+text
+{% if form.errors %}
+  <div class="alert alert-danger">{{ form.errors }}</div>
+{% endif %}
+{% if formset.errors %}
+  <div class="alert alert-danger">{{ formset.errors }}</div>
+{% endif %}
+
+{% for subform in formset %}
+  {% if subform.errors %}
+    <div class="alert alert-danger">
+      Errores en la actividad {{ forloop.counter }}: {{ subform.errors }}
+    </div>
+  {% endif %}
+{% endfor %}
+
 <form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Guardar</button>
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <h4>Programación de Actividades</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>PROCESO/ACTIVIDAD/REQUISITO POR AUDITAR</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subform in formset %}
+                {% with actividad=actividades|index:forloop.counter0 %}
+                <tr>
+                    <!-- Selección de fecha -->
+                    <td>
+                        <select name="form-{{ forloop.counter0 }}-fecha" class="form-select">
+                            <option value="">Seleccione una fecha</option>
+                            {% for fecha in fechas_disponibles %}
+                                <option value="{{ fecha|date:'Y-m-d' }}" {% if subform.fecha.value == fecha|stringformat:"s" %}selected{% endif %}>
+                                    {{ fecha }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <!-- Campo de hora editable -->
+                    <td>{{ subform.hora }}</td>
+                    <!-- Texto fijo de la actividad -->
+                    <td style="white-space: pre-line;">{{ actividad.descripcion }}</td>
+                </tr>
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ formset.management_form }}
+
+    <button type="submit" class="btn btn-primary">Guardar Plan</button>
 </form>
+{% endblock %}

@@ -8,6 +8,12 @@ from .models import PlanAuditoria, ActaAuditoria, AsistenteActa
 from .forms import PlanAuditoriaForm, ActaAuditoriaForm, AsistenteActaForm
 from programacion.models import ProgramacionAuditoria, Auditor  # O el nombre real
 from datetime import timedelta
+from .models import ActividadCEA, HoraActividadPlan
+from .forms import HoraActividadPlanFormSet
+from django.forms import modelformset_factory
+from django.contrib import messages
+
+
 
 def auditor_check(user):
     return user.groups.filter(name='Auditores').exists()
@@ -26,29 +32,132 @@ def dashboard_auditor(request):
         'planes': planes,
     })
 
+
+
+
+
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import PlanAuditoria, ActividadCEA, HoraActividadPlan
+from .forms import PlanAuditoriaForm
+from django.forms import modelformset_factory
+from programacion.models import ProgramacionAuditoria
+from datetime import timedelta
+
 @login_required
-@user_passes_test(auditor_check)
+@user_passes_test(lambda u: u.groups.filter(name='Auditores').exists())
 def crear_plan(request, programacion_id):
     programacion = get_object_or_404(ProgramacionAuditoria, id=programacion_id)
+
+    # Verifica si ya existe un plan para esta programación
+    plan_existente = PlanAuditoria.objects.filter(programacion=programacion).first()
+    if plan_existente:
+        messages.info(request, "Ya existe un plan para esta programación. Puedes editarlo aquí.")
+        return redirect('editar_plan', plan_existente.id)
+
+    actividades = list(ActividadCEA.objects.filter(nivel=programacion.nivel_auditoria))
+    fechas_etapa2 = list(programacion.fechas_etapa2.all())
+    fechas_disponibles = [f.fecha for f in fechas_etapa2]
+
+    # Para depuración
+    print(f"Actividades: {len(actividades)}")
+    print(f"Fechas disponibles: {fechas_disponibles}")
+
     if request.method == 'POST':
+        print("POST recibido")
         form = PlanAuditoriaForm(request.POST, request.FILES)
-        if form.is_valid():
+        formset_factory = modelformset_factory(
+            HoraActividadPlan,
+            fields=('fecha', 'hora'),
+            extra=len(actividades)
+        )
+        formset = formset_factory(request.POST)
+        print("Form válido:", form.is_valid())
+        print("Formset válido:", formset.is_valid())
+        print("Form errors:", form.errors)
+        print("Formset errors:", formset.errors)
+        if form.is_valid() and formset.is_valid():
+            print("Guardando plan...")
             plan = form.save(commit=False)
             plan.programacion = programacion
             plan.auditor = request.user
-
-            # Obtener la primera fecha de etapa 2 si existe
-            primera_fecha_etapa2 = programacion.fechas_etapa2.first()
-            if primera_fecha_etapa2:
-                plan.fecha_aprobacion = primera_fecha_etapa2.fecha - timedelta(days=2)
+            if fechas_etapa2:
+                plan.fecha_aprobacion = fechas_etapa2[0].fecha - timedelta(days=2)
             else:
-                plan.fecha_aprobacion = None  # O maneja el caso como prefieras
-
+                from django.utils import timezone
+                plan.fecha_aprobacion = timezone.now().date()
             plan.save()
+            for subform, actividad in zip(formset, actividades):
+                hora_actividad = subform.save(commit=False)
+                hora_actividad.plan = plan
+                hora_actividad.actividad = actividad
+                hora_actividad.save()
+            messages.success(request, "Plan de auditoría creado correctamente.")
             return redirect('dashboard_auditor')
+        else:
+            messages.error(request, "Corrige los errores en el formulario.")
     else:
         form = PlanAuditoriaForm()
-    return render(request, 'documentacion_auditores/plan_form.html', {'form': form, 'programacion': programacion})
+        formset_factory = modelformset_factory(
+            HoraActividadPlan,
+            fields=('fecha', 'hora'),
+            extra=len(actividades)
+        )
+        formset = formset_factory(queryset=HoraActividadPlan.objects.none())
+
+    return render(request, 'documentacion_auditores/plan_form.html', {
+        'form': form,
+        'formset': formset,
+        'actividades': actividades,
+        'fechas_disponibles': fechas_disponibles,
+        'programacion': programacion,
+    })
+
+
+
+
+@login_required
+@user_passes_test(lambda u: u.groups.filter(name='Auditores').exists())
+def editar_plan(request, plan_id):
+    plan = get_object_or_404(PlanAuditoria, id=plan_id)
+    actividades = list(ActividadCEA.objects.filter(nivel=plan.programacion.nivel_auditoria))
+    fechas_etapa2 = list(plan.programacion.fechas_etapa2.all())
+    fechas_disponibles = [f.fecha for f in fechas_etapa2]
+
+    queryset_horas = HoraActividadPlan.objects.filter(plan=plan)
+    if queryset_horas.exists():
+        extra_forms = 0
+    else:
+        extra_forms = len(actividades)
+
+    formset_factory = modelformset_factory(
+        HoraActividadPlan,
+        fields=('fecha', 'hora'),
+        extra=extra_forms
+    )
+
+    if request.method == 'POST':
+        form = PlanAuditoriaForm(request.POST, request.FILES, instance=plan)
+        formset = formset_factory(request.POST, queryset=queryset_horas)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('dashboard_auditor')
+    else:
+        form = PlanAuditoriaForm(instance=plan)
+        formset = formset_factory(queryset=queryset_horas)
+
+    return render(request, 'documentacion_auditores/plan_form.html', {
+        'form': form,
+        'formset': formset,
+        'actividades': actividades,
+        'fechas_disponibles': fechas_disponibles,
+        'programacion': plan.programacion,
+        'editando': True,
+    })
+
 
 
 @login_required
