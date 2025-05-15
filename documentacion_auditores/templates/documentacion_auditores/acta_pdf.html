@@ -5,40 +5,76 @@
     <title>Acta de Auditoría</title>
     <style>
         body { font-family: sans-serif; font-size: 12px; }
-        .title { font-size: 18px; font-weight: bold; }
-        .section { margin-top: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #333; padding: 6px; }
+        th { background: #f0f0f0; }
     </style>
 </head>
 <body>
-    <div class="title">ACTA DE APERTURA Y CIERRE</div>
+    <h2>ACTA DE AUDITORÍA</h2>
+    <table>
+        <tr><th>Número de Servicio</th><td>{{ cotizacion.numero_servicio }}</td></tr>
+        <tr><th>Nombre del Propietario y/o Razón Social</th><td>{{ cliente.nombre_propietario }}</td></tr>
+        <tr><th>Representante Legal</th><td>{{ cliente.representante_legal }}</td></tr>
+        <tr><th>Nombre del Establecimiento Comercial</th><td>{{ cliente.nombre_establecimiento }}</td></tr>
+        <tr><th>NIT</th><td>{{ cliente.nit }}</td></tr>
+        <tr>
+            <th>Fechas de la carta de programación</th>
+            <td>
+                {% for fecha in fechas %}
+                    {{ fecha.fecha|date:"Y-m-d" }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+        <tr><th>Nivel del CEA</th><td>{{ programacion.nivel_auditoria }}</td></tr>
+        <tr>
+            <th>Categorías</th>
+            <td>
+                {% for cat in cliente.categorias_certificar.all %}
+                    {{ cat.nombre }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+    </table>
 
-    <div class="section">
-        <strong>N° Servicio:</strong> {{ acta.programacion.cotizacion.numero_servicio }}<br>
-        <strong>Razón Social:</strong> {{ acta.programacion.nombre_razon_social }}<br>
-        <strong>Representante Legal:</strong> {{ acta.representante_legal_nombre }} ({{ acta.representante_legal_cargo }})<br>
-        <strong>Auditor:</strong> {{ acta.programacion.auditor.get_full_name }}
-    </div>
+    <h4>Firmas de aceptación del acta</h4>
+    <table>
+        <tr>
+            <th>Nombre</th>
+            <th>Cargo</th>
+            <th>Firma</th>
+        </tr>
+        <tr>
+            <td>{{ cliente.representante_legal }}</td>
+            <td>Representante Legal</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>{{ auditor }}</td>
+            <td>Auditor</td>
+            <td></td>
+        </tr>
+    </table>
 
-    <div class="section">
-        <strong>Fecha de inicio:</strong> {{ acta.fecha_inicio }}<br>
-        <strong>Fecha de cierre:</strong> {{ acta.fecha_cierre }}
-    </div>
+    <h4>Registro de Asistencia</h4>
+    <table>
+      <tr>
+        <th>Nombre</th>
+        <th>Cargo</th>
+        <th>Firma apertura</th>
+        <th>Firma cierre</th>
+      </tr>
+      {% for asistente in asistentes %}
+      <tr>
+        <td>{{ asistente.nombre }}</td>
+        <td>{{ asistente.cargo }}</td>
+        <td style="height:40px; border-bottom:1px solid #000;"></td>
+        <td style="height:40px; border-bottom:1px solid #000;"></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4">No hay asistentes registrados.</td></tr>
+      {% endfor %}
+    </table>
 
-    <div class="section">
-        <strong>Firmas:</strong><br>
-        Auditor: _______________________<br>
-        Representante: _______________________<br>
-    </div>
 </body>
 </html>
-{% for acta in actas %}
-<tr>
-    <td>{{ acta.programacion.cotizacion.numero_servicio }}</td>
-    <td>{{ acta.fecha_inicio }}</td>
-    <td>
-        <a href="{% url 'imprimir_acta' acta.id %}" target="_blank" class="btn btn-sm btn-success">
-            Imprimir Acta
-        </a>
-    </td>
-</tr>
-{% endfor %}

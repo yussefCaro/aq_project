@@ -15,7 +15,8 @@ class ActaAuditoriaForm(forms.ModelForm):
 class AsistenteActaForm(forms.ModelForm):
     class Meta:
         model = AsistenteActa
-        fields = ['nombre', 'cargo', 'firma_apertura', 'firma_cierre']
+        fields = ['nombre', 'cargo']
+        exclude = ['firma_apertura', 'firma_cierre']
 
 
 from django.forms import modelformset_factory
@@ -26,3 +27,5 @@ HoraActividadPlanFormSet = modelformset_factory(
     fields=('fecha', 'hora'),
     extra=0
 )
+
+

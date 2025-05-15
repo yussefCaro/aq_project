@@ -3,8 +3,8 @@
   {% for prog in programaciones %}
     <li>
       Servicio: {{ prog.cotizacion.numero_servicio }} |
-      <a href="{% url 'crear_plan' prog.id %}">Crear Plan</a> |
-      <a href="{% url 'crear_acta' prog.id %}">Crear Acta</a>
+      <a href="{% url 'crear_plan' prog.id %}">Crear Plan</a>
+      {# Aquí normalmente NO hay acta asociada aún, así que no muestres el botón de asistentes #}
     </li>
   {% endfor %}
 </ul>
@@ -16,6 +16,8 @@
     <th>Razón Social</th>
     <th>Fecha aprobación</th>
     <th>Acción</th>
+    <th>Acta de apertura y cierre</th>
+    <th>Asistentes</th>
   </tr>
   {% for plan in planes %}
   <tr>
@@ -26,22 +28,32 @@
       <a href="{% url 'imprimir_plan' plan.id %}" target="_blank" class="btn btn-sm btn-primary">
         Imprimir Plan
       </a>
+      {% if not plan.aprobado_por_cliente %}
+        <a href="{% url 'editar_plan' plan.id %}" class="btn btn-sm btn-warning">Editar Plan</a>
+        <form method="post" action="{% url 'aprobar_plan_cliente' plan.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit">Aprobación del plan por el cliente</button>
+        </form>
+      {% else %}
+        <span style="color:green;">Aprobado por cliente</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if plan.acta and plan.acta.asistentes.exists %}
+        <a href="{% url 'generar_acta_pdf' plan.programacion.id %}" target="_blank" class="btn btn-sm btn-success">
+          Imprimir Acta
+        </a>
+      {% else %}
+        <span style="color:gray;">Debe registrar los asistentes antes de imprimir el acta</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if plan.aprobado_por_cliente and plan.acta %}
+        <a href="{% url 'asistentes_acta' plan.acta.id %}" class="btn btn-sm btn-info">Agregar asistentes</a>
+      {% else %}
+        <span style="color:gray;">No disponible</span>
+      {% endif %}
     </td>
   </tr>
   {% endfor %}
-
-{% for programacion in programaciones %}
-  <tr>
-    <td>{{ programacion.cotizacion.numero_servicio }}</td>
-    <!-- Otros campos -->
-    <td>
-      <a href="{% url 'imprimir_programacion' programacion.id %}" class="btn btn-sm btn-secondary" target="_blank">
-        🖨️ Carta de Programación (PDF)
-      </a>
-    </td>
-  </tr>
-{% endfor %}
-
-
-
 </table>

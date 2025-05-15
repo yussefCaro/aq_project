@@ -27,6 +27,8 @@ text
     {% csrf_token %}
     {{ form.as_p }}
 
+    {{ formset.management_form }}
+
     <h4>Programación de Actividades</h4>
     <table class="table table-bordered">
         <thead>
@@ -40,7 +42,7 @@ text
             {% for subform in formset %}
                 {% with actividad=actividades|index:forloop.counter0 %}
                 <tr>
-                    <!-- Selección de fecha -->
+                    {{ subform.id }}
                     <td>
                         <select name="form-{{ forloop.counter0 }}-fecha" class="form-select">
                             <option value="">Seleccione una fecha</option>
@@ -51,9 +53,7 @@ text
                             {% endfor %}
                         </select>
                     </td>
-                    <!-- Campo de hora editable -->
                     <td>{{ subform.hora }}</td>
-                    <!-- Texto fijo de la actividad -->
                     <td style="white-space: pre-line;">{{ actividad.descripcion }}</td>
                 </tr>
                 {% endwith %}
@@ -61,8 +61,7 @@ text
         </tbody>
     </table>
 
-    {{ formset.management_form }}
-
     <button type="submit" class="btn btn-primary">Guardar Plan</button>
 </form>
+
 {% endblock %}

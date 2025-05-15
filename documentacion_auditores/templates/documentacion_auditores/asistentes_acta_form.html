@@ -1,0 +1,24 @@
+<h3>Registro de Asistencia para el Acta</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <table>
+        <tr>
+            <th>Nombre</th>
+            <th>Cargo</th>
+            <th>Eliminar</th>
+        </tr>
+        {% for form in formset %}
+        <tr>
+            {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+            {% endfor %}
+            <td>{{ form.nombre }}</td>
+            <td>{{ form.cargo }}</td>
+            <td>{% if form.instance.pk %}{{ form.DELETE }} Eliminar{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <button type="submit">Guardar asistentes</button>
+</form>
+
