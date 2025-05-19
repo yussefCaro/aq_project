@@ -1,59 +1,85 @@
-<h2>Mis Programaciones</h2>
-<ul>
-  {% for prog in programaciones %}
-    <li>
-      Servicio: {{ prog.cotizacion.numero_servicio }} |
-      <a href="{% url 'crear_plan' prog.id %}">Crear Plan</a>
-      {# Aquí normalmente NO hay acta asociada aún, así que no muestres el botón de asistentes #}
-    </li>
-  {% endfor %}
-</ul>
+{% extends "layouts/base.html" %}
+{% block content %}
 
-<h3>Planes de Auditoría Generados</h3>
-<table>
-  <tr>
-    <th>Servicio</th>
-    <th>Razón Social</th>
-    <th>Fecha aprobación</th>
-    <th>Acción</th>
-    <th>Acta de apertura y cierre</th>
-    <th>Asistentes</th>
-  </tr>
-  {% for plan in planes %}
-  <tr>
-    <td>{{ plan.programacion.cotizacion.numero_servicio }}</td>
-    <td>{{ plan.programacion.cotizacion.solicitud.cliente.nombre_establecimiento }}</td>
-    <td>{{ plan.fecha_aprobacion }}</td>
-    <td>
-      <a href="{% url 'imprimir_plan' plan.id %}" target="_blank" class="btn btn-sm btn-primary">
-        Imprimir Plan
-      </a>
-      {% if not plan.aprobado_por_cliente %}
-        <a href="{% url 'editar_plan' plan.id %}" class="btn btn-sm btn-warning">Editar Plan</a>
-        <form method="post" action="{% url 'aprobar_plan_cliente' plan.id %}" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit">Aprobación del plan por el cliente</button>
-        </form>
-      {% else %}
-        <span style="color:green;">Aprobado por cliente</span>
-      {% endif %}
-    </td>
-    <td>
-      {% if plan.acta and plan.acta.asistentes.exists %}
-        <a href="{% url 'generar_acta_pdf' plan.programacion.id %}" target="_blank" class="btn btn-sm btn-success">
-          Imprimir Acta
-        </a>
-      {% else %}
-        <span style="color:gray;">Debe registrar los asistentes antes de imprimir el acta</span>
-      {% endif %}
-    </td>
-    <td>
-      {% if plan.aprobado_por_cliente and plan.acta %}
-        <a href="{% url 'asistentes_acta' plan.acta.id %}" class="btn btn-sm btn-info">Agregar asistentes</a>
-      {% else %}
-        <span style="color:gray;">No disponible</span>
-      {% endif %}
-    </td>
-  </tr>
-  {% endfor %}
-</table>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+            <div class="card shadow rounded-4 border-0">
+                <div class="card-body p-4">
+
+                    <h2 class="mb-4 text-success fw-bold">
+                        <i class="bi bi-list-check"></i> Mis Programaciones
+                    </h2>
+                    <ul class="mb-5">
+                        {% for prog in programaciones %}
+                            <li>
+                                <span class="fw-semibold">{{ prog.cotizacion.numero_servicio }}</span>
+                                | <a href="{% url 'crear_plan' prog.id %}" class="link-success fw-bold">Crear Plan</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <h3 class="mb-4 text-dark fw-bold">Planes de Auditoría Generados</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle rounded-3 overflow-hidden">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Servicio</th>
+                                    <th>Razón Social</th>
+                                    <th>Fecha aprobación</th>
+                                    <th>Acción</th>
+                                    <th>Acta de apertura y cierre</th>
+                                    <th>Asistentes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for plan in planes %}
+                                <tr>
+                                    <td>{{ plan.programacion.cotizacion.numero_servicio }}</td>
+                                    <td>{{ plan.programacion.cotizacion.solicitud.cliente.nombre_establecimiento }}</td>
+                                    <td>{{ plan.fecha_aprobacion }}</td>
+                                    <td>
+                                        <a href="{% url 'imprimir_plan' plan.id %}" class="btn btn-success btn-sm mb-1 fw-semibold">
+                                            <i class="bi bi-printer"></i> Imprimir Plan
+                                        </a>
+                                        {% if not plan.aprobado_por_cliente %}
+                                            <a href="{% url 'editar_plan' plan.id %}" class="btn btn-warning btn-sm mb-1 fw-semibold">Editar Plan</a>
+                                            <form method="post" action="{% url 'aprobar_plan_cliente' plan.id %}" style="display:inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-success btn-sm mb-1 fw-semibold">Aprobación del plan</button>
+                                            </form>
+                                        {% else %}
+                                            <span class="badge bg-success">Aprobado por cliente</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if plan.acta and plan.acta.asistentes.exists %}
+                                            <a href="{% url 'generar_acta_pdf' plan.programacion.id %}" class="btn btn-outline-success btn-sm mb-1 fw-semibold">
+                                                <i class="bi bi-file-earmark-pdf"></i> Imprimir Acta
+                                            </a>
+                                        {% else %}
+                                            <span class="text-secondary">Debe registrar los asistentes antes de imprimir el acta</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if plan.aprobado_por_cliente and plan.acta %}
+                                            <a href="{% url 'asistentes_acta' plan.acta.id %}" class="btn btn-outline-info btn-sm mb-1 fw-semibold">
+                                                <i class="bi bi-person-plus"></i> Agregar asistentes
+                                            </a>
+                                        {% else %}
+                                            <span class="text-secondary">No disponible</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

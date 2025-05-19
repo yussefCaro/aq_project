@@ -1,3 +1,6 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
 <h3>Registro de Asistencia para el Acta</h3>
 <form method="post">
     {% csrf_token %}
@@ -22,3 +25,4 @@
     <button type="submit">Guardar asistentes</button>
 </form>
 
+{% endblock %}
