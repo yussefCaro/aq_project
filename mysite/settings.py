@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'cotizaciones',
     'django.contrib.humanize',
     'documentacion_auditores',
+    'ejecucion_auditoria',
 
 ]
 

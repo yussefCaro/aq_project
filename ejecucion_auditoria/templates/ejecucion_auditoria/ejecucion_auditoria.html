@@ -1,0 +1,144 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<h2 class="mb-4 text-success fw-bold">
+    <i class="bi bi-clipboard-check"></i> Ejecución de Auditoría
+</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Criterio/Requisito</th>
+                    <th>Cumple</th>
+                    <th>No Cumple</th>
+                    <th>Aspecto de Mejora</th>
+                    <th>No Aplica</th>
+                    <th>Evidencia</th>
+                    <th>Imágenes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in formset %}
+                <tr>
+                    {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+                    <td>
+                        {{ form.instance.requisito.nombre }}
+                        <i class="bi bi-info-circle text-success ms-1"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="right"
+                           data-bs-custom-class="custom-tooltip"
+                           title="{% if form.instance.requisito.checkpoint_iaf_md4 %}Checkpoint IAF MD4: {{ form.instance.requisito.checkpoint_iaf_md4 }}&#10;{% endif %}{{ form.instance.requisito.descripcion }}"
+                           aria-label="Más información">
+                        </i>
+                    </td>
+                    <td>{{ form.cumple }}</td>
+                    <td>
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input no-cumple-checkbox"
+                                   id="id_no_cumple_{{ forloop.counter0 }}"
+                                   name="{{ form.no_cumple.html_name }}"
+                                   {% if form.no_cumple.value %}checked{% endif %}>
+                            <label class="form-check-label" for="id_no_cumple_{{ forloop.counter0 }}">No Cumple</label>
+                        </div>
+                        <div class="mt-2" id="no-conformidad-{{ forloop.counter0 }}"
+                             style="display: {% if form.no_cumple.value %}block{% else %}none{% endif %};">
+                            {{ form.concepto_no_conformidad }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input aspecto-mejora-checkbox"
+                                   id="id_aspecto_mejora_{{ forloop.counter0 }}"
+                                   name="{{ form.aspecto_mejora.html_name }}"
+                                   {% if form.aspecto_mejora.value %}checked{% endif %}>
+                            <label class="form-check-label" for="id_aspecto_mejora_{{ forloop.counter0 }}">Aspecto de Mejora</label>
+                        </div>
+                        <div class="mt-2" id="mejora-{{ forloop.counter0 }}"
+                             style="display: {% if form.aspecto_mejora.value %}block{% else %}none{% endif %};">
+                            {{ form.concepto_mejora }}
+                        </div>
+                    </td>
+                    <td>{{ form.no_aplica }}</td>
+                    <td>
+                        <select name="{{ form.evidencia.html_name }}"
+                                class="form-select evidencia-select"
+                                id="id_evidencia_{{ forloop.counter0 }}">
+                            <option value="">---------</option>
+                            {% for val, label in form.fields.evidencia.choices %}
+                                <option value="{{ val }}" {% if form.evidencia.value == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="mt-2" id="evidencia-concepto-{{ forloop.counter0 }}"
+                             style="display: {% if form.evidencia.value %}block{% else %}none{% endif %};">
+                            {{ form.concepto_evidencia }}
+                        </div>
+                    </td>
+                    <td>
+                        {{ form.imagen1 }}<br>
+                        {{ form.imagen2 }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-3">
+        <button type="submit" name="guardar" class="btn btn-success me-2">Guardar avance</button>
+        <button type="submit" name="finalizar" class="btn btn-primary">Finalizar</button>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar/ocultar textarea de No Cumple
+    document.querySelectorAll('.no-cumple-checkbox').forEach(function(checkbox, idx) {
+        checkbox.addEventListener('change', function() {
+            var textareaDiv = document.getElementById('no-conformidad-' + idx);
+            if (this.checked) {
+                textareaDiv.style.display = 'block';
+            } else {
+                textareaDiv.style.display = 'none';
+            }
+        });
+    });
+    // Mostrar/ocultar textarea de Aspecto de Mejora
+    document.querySelectorAll('.aspecto-mejora-checkbox').forEach(function(checkbox, idx) {
+        checkbox.addEventListener('change', function() {
+            var textareaDiv = document.getElementById('mejora-' + idx);
+            if (this.checked) {
+                textareaDiv.style.display = 'block';
+            } else {
+                textareaDiv.style.display = 'none';
+            }
+        });
+    });
+    // Mostrar/ocultar textarea de Concepto de Evidencia
+    document.querySelectorAll('.evidencia-select').forEach(function(select, idx) {
+        select.addEventListener('change', function() {
+            var textareaDiv = document.getElementById('evidencia-concepto-' + idx);
+            if (this.value) {
+                textareaDiv.style.display = 'block';
+            } else {
+                textareaDiv.style.display = 'none';
+            }
+        });
+    });
+    // Inicializar tooltips de Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});
+</script>
+{% endblock %}

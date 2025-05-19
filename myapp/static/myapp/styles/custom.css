@@ -1,0 +1,6 @@
+
+.custom-tooltip {
+  --bs-tooltip-bg: #181824;      /* Fondo oscuro */
+  --bs-tooltip-color: #38ce3c;   /* Texto verde */
+  font-size: 1rem;
+}
