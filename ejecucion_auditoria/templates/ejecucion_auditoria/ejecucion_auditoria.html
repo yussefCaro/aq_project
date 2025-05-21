@@ -30,11 +30,12 @@
                     <td>
                         {{ form.instance.requisito.nombre }}
                         <i class="bi bi-info-circle text-success ms-1"
-                           data-bs-toggle="tooltip"
-                           data-bs-placement="right"
-                           data-bs-custom-class="custom-tooltip"
-                           title="{% if form.instance.requisito.checkpoint_iaf_md4 %}Checkpoint IAF MD4: {{ form.instance.requisito.checkpoint_iaf_md4 }}&#10;{% endif %}{{ form.instance.requisito.descripcion }}"
-                           aria-label="Más información">
+                           tabindex="0"
+                           data-bs-toggle="popover"
+                           data-bs-trigger="hover focus"
+                           data-bs-html="true"
+                           data-bs-custom-class="custom-popover"
+                           data-bs-content="{{ form.instance.requisito.descripcion|linebreaksbr }}">
                         </i>
                     </td>
                     <td>{{ form.cumple }}</td>
@@ -44,6 +45,7 @@
                                    class="form-check-input no-cumple-checkbox"
                                    id="id_no_cumple_{{ forloop.counter0 }}"
                                    name="{{ form.no_cumple.html_name }}"
+                                   data-target="no-conformidad-{{ forloop.counter0 }}"
                                    {% if form.no_cumple.value %}checked{% endif %}>
                             <label class="form-check-label" for="id_no_cumple_{{ forloop.counter0 }}">No Cumple</label>
                         </div>
@@ -58,6 +60,7 @@
                                    class="form-check-input aspecto-mejora-checkbox"
                                    id="id_aspecto_mejora_{{ forloop.counter0 }}"
                                    name="{{ form.aspecto_mejora.html_name }}"
+                                   data-target="mejora-{{ forloop.counter0 }}"
                                    {% if form.aspecto_mejora.value %}checked{% endif %}>
                             <label class="form-check-label" for="id_aspecto_mejora_{{ forloop.counter0 }}">Aspecto de Mejora</label>
                         </div>
@@ -101,44 +104,63 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Mostrar/ocultar textarea de No Cumple
-    document.querySelectorAll('.no-cumple-checkbox').forEach(function(checkbox, idx) {
+    // No Cumple
+    document.querySelectorAll('.no-cumple-checkbox').forEach(function(checkbox) {
         checkbox.addEventListener('change', function() {
-            var textareaDiv = document.getElementById('no-conformidad-' + idx);
-            if (this.checked) {
-                textareaDiv.style.display = 'block';
-            } else {
-                textareaDiv.style.display = 'none';
+            var targetId = this.getAttribute('data-target');
+            var textareaDiv = document.getElementById(targetId);
+            if (textareaDiv) {
+                textareaDiv.style.display = this.checked ? 'block' : 'none';
             }
         });
+        // Inicializa estado al cargar
+        var targetId = checkbox.getAttribute('data-target');
+        var textareaDiv = document.getElementById(targetId);
+        if (textareaDiv) {
+            textareaDiv.style.display = checkbox.checked ? 'block' : 'none';
+        }
     });
-    // Mostrar/ocultar textarea de Aspecto de Mejora
-    document.querySelectorAll('.aspecto-mejora-checkbox').forEach(function(checkbox, idx) {
+
+    // Aspecto de Mejora
+    document.querySelectorAll('.aspecto-mejora-checkbox').forEach(function(checkbox) {
         checkbox.addEventListener('change', function() {
-            var textareaDiv = document.getElementById('mejora-' + idx);
-            if (this.checked) {
-                textareaDiv.style.display = 'block';
-            } else {
-                textareaDiv.style.display = 'none';
+            var targetId = this.getAttribute('data-target');
+            var textareaDiv = document.getElementById(targetId);
+            if (textareaDiv) {
+                textareaDiv.style.display = this.checked ? 'block' : 'none';
             }
         });
+        var targetId = checkbox.getAttribute('data-target');
+        var textareaDiv = document.getElementById(targetId);
+        if (textareaDiv) {
+            textareaDiv.style.display = checkbox.checked ? 'block' : 'none';
+        }
     });
-    // Mostrar/ocultar textarea de Concepto de Evidencia
+
+    // Evidencia (select)
     document.querySelectorAll('.evidencia-select').forEach(function(select, idx) {
         select.addEventListener('change', function() {
             var textareaDiv = document.getElementById('evidencia-concepto-' + idx);
-            if (this.value) {
-                textareaDiv.style.display = 'block';
-            } else {
-                textareaDiv.style.display = 'none';
+            if (textareaDiv) {
+                textareaDiv.style.display = this.value ? 'block' : 'none';
             }
         });
+        // Inicializa estado al cargar
+        var textareaDiv = document.getElementById('evidencia-concepto-' + idx);
+        if (textareaDiv) {
+            textareaDiv.style.display = select.value ? 'block' : 'none';
+        }
     });
-    // Inicializar tooltips de Bootstrap
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-      new bootstrap.Tooltip(tooltipTriggerEl)
-    })
+
+    // Popovers Bootstrap
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    popoverTriggerList.forEach(function (popoverTriggerEl) {
+      new bootstrap.Popover(popoverTriggerEl, {
+        boundary: document.body,
+        html: true,
+        sanitize: false
+      })
+    });
 });
 </script>
 {% endblock %}
