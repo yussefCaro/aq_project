@@ -1,0 +1,88 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Recomendación del Auditor</h2>
+
+<form method="post" id="recomendacionForm">
+    {% csrf_token %}
+    <div class="modal show d-block" id="recomendacionModal" tabindex="-1" aria-labelledby="recomendacionModalLabel" aria-modal="true" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="recomendacionModalLabel">Recomendación del Auditor</h5>
+          </div>
+          <div class="modal-body">
+            <label class="form-label">Seleccione hasta dos recomendaciones:</label>
+            <div>
+              <div class="form-check">
+                <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Otorgar Certificado" id="rec1">
+                <label class="form-check-label" for="rec1">Otorgar Certificado</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Renovar Certificado" id="rec2">
+                <label class="form-check-label" for="rec2">Renovar Certificado</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Mantener Certificado" id="rec3">
+                <label class="form-check-label" for="rec3">Mantener Certificado</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Suspender el Certificado" id="rec4">
+                <label class="form-check-label" for="rec4">Suspender el Certificado</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Cancelar el Certificado" id="rec5">
+                <label class="form-check-label" for="rec5">Cancelar el Certificado</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Ampliar el alcance del Certificado" id="rec6">
+                <label class="form-check-label" for="rec6">Ampliar el alcance del Certificado</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Reducir el Alcance del Certificado" id="rec7">
+                <label class="form-check-label" for="rec7">Reducir el Alcance del Certificado</label>
+              </div>
+            </div>
+            <div class="form-text">Puede seleccionar hasta dos opciones.</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="guardarRecomendacion" class="btn btn-success">Guardar recomendación</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <input type="hidden" name="recomendaciones" id="recomendacionesInput">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Limitar a 2 checkboxes seleccionados
+    let checkboxes = document.querySelectorAll('.recomendacion-checkbox');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            let checked = document.querySelectorAll('.recomendacion-checkbox:checked');
+            if (checked.length > 2) {
+                this.checked = false;
+                alert('Solo puede seleccionar hasta dos recomendaciones.');
+            }
+        });
+    });
+
+    // Guardar recomendación y enviar formulario
+    var guardarBtn = document.getElementById('guardarRecomendacion');
+    if (guardarBtn) {
+        guardarBtn.addEventListener('click', function() {
+            let seleccionadas = Array.from(document.querySelectorAll('.recomendacion-checkbox:checked')).map(cb => cb.value);
+            if (seleccionadas.length === 0) {
+                alert('Debe seleccionar al menos una recomendación.');
+                return;
+            }
+            document.getElementById('recomendacionesInput').value = seleccionadas.join(',');
+            document.getElementById('recomendacionForm').submit();
+        });
+    }
+});
+</script>
+{% endblock %}

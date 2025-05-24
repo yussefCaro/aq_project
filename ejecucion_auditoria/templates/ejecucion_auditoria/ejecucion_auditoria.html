@@ -1,17 +1,36 @@
 {% extends "layouts/base.html" %}
-{% block content %}
 
+{% block content %}
 <h2 class="mb-4 text-success fw-bold">
     <i class="bi bi-clipboard-check"></i> Ejecución de Auditoría
 </h2>
 
-<form method="post" enctype="multipart/form-data">
+{# Mensajes de error/success #}
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" id="ejecucionForm">
     {% csrf_token %}
     {{ formset.management_form }}
+
+    {% if formset.non_form_errors %}
+      <div class="alert alert-danger mt-3">
+        <ul>
+          {% for error in formset.non_form_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-dark">
                 <tr>
+                    <th>#</th>
                     <th>Criterio/Requisito</th>
                     <th>Cumple</th>
                     <th>No Cumple</th>
@@ -23,10 +42,11 @@
             </thead>
             <tbody>
                 {% for form in formset %}
-                <tr>
+                <tr class="fila-criterio">
                     {% for hidden in form.hidden_fields %}
                         {{ hidden }}
                     {% endfor %}
+                    <td>{{ forloop.counter }}</td>
                     <td>
                         {{ form.instance.requisito.nombre }}
                         <i class="bi bi-info-circle text-success ms-1"
@@ -38,11 +58,16 @@
                            data-bs-content="{{ form.instance.requisito.descripcion|linebreaksbr }}">
                         </i>
                     </td>
-                    <td>{{ form.cumple }}</td>
+                    <td>
+                        <div class="form-check">
+                            {{ form.cumple }}
+                            <label class="form-check-label" for="{{ form.cumple.id_for_label }}">Cumple</label>
+                        </div>
+                    </td>
                     <td>
                         <div class="form-check">
                             <input type="checkbox"
-                                   class="form-check-input no-cumple-checkbox"
+                                   class="form-check-input no-cumple-checkbox mutuamente-excluyente"
                                    id="id_no_cumple_{{ forloop.counter0 }}"
                                    name="{{ form.no_cumple.html_name }}"
                                    data-target="no-conformidad-{{ forloop.counter0 }}"
@@ -57,7 +82,7 @@
                     <td>
                         <div class="form-check">
                             <input type="checkbox"
-                                   class="form-check-input aspecto-mejora-checkbox"
+                                   class="form-check-input aspecto-mejora-checkbox mutuamente-excluyente"
                                    id="id_aspecto_mejora_{{ forloop.counter0 }}"
                                    name="{{ form.aspecto_mejora.html_name }}"
                                    data-target="mejora-{{ forloop.counter0 }}"
@@ -69,7 +94,12 @@
                             {{ form.concepto_mejora }}
                         </div>
                     </td>
-                    <td>{{ form.no_aplica }}</td>
+                    <td>
+                        <div class="form-check">
+                            {{ form.no_aplica }}
+                            <label class="form-check-label" for="{{ form.no_aplica.id_for_label }}">No Aplica</label>
+                        </div>
+                    </td>
                     <td>
                         <select name="{{ form.evidencia.html_name }}"
                                 class="form-select evidencia-select"
@@ -93,18 +123,84 @@
             </tbody>
         </table>
     </div>
-    <div class="mt-3">
+
+    <div class="boton-flotante">
         <button type="submit" name="guardar" class="btn btn-success me-2">Guardar avance</button>
         <button type="submit" name="finalizar" class="btn btn-primary">Finalizar</button>
     </div>
+    <input type="hidden" name="recomendaciones" id="recomendacionesInput">
 </form>
+
+<!-- Modal de Recomendación -->
+<div class="modal fade" id="recomendacionModal" tabindex="-1" aria-labelledby="recomendacionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="recomendacionModalLabel">Recomendación del Auditor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Seleccione hasta dos recomendaciones:</label>
+        <div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Otorgar Certificado" id="rec1">
+            <label class="form-check-label" for="rec1">Otorgar Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Renovar Certificado" id="rec2">
+            <label class="form-check-label" for="rec2">Renovar Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Mantener Certificado" id="rec3">
+            <label class="form-check-label" for="rec3">Mantener Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Suspender el Certificado" id="rec4">
+            <label class="form-check-label" for="rec4">Suspender el Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Cancelar el Certificado" id="rec5">
+            <label class="form-check-label" for="rec5">Cancelar el Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Ampliar el alcance del Certificado" id="rec6">
+            <label class="form-check-label" for="rec6">Ampliar el alcance del Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Reducir el Alcance del Certificado" id="rec7">
+            <label class="form-check-label" for="rec7">Reducir el Alcance del Certificado</label>
+          </div>
+        </div>
+        <div class="form-text">Puede seleccionar hasta dos opciones.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="guardarRecomendacion" class="btn btn-success">Guardar recomendación</button>
+      </div>
+    </div>
+  </div>
+</div>
+<input type="hidden" name="recomendaciones" id="recomendacionesInput">
 
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // No Cumple
+    // Exclusividad de checkboxes por fila
+    document.querySelectorAll('tr.fila-criterio').forEach(function(row) {
+        let checks = row.querySelectorAll('.form-check-input');
+        checks.forEach(function(chk) {
+            chk.addEventListener('change', function() {
+                if (this.checked) {
+                    checks.forEach(function(other) {
+                        if (other !== chk) other.checked = false;
+                    });
+                }
+            });
+        });
+    });
+
+    // No Cumple (mostrar textarea)
     document.querySelectorAll('.no-cumple-checkbox').forEach(function(checkbox) {
         checkbox.addEventListener('change', function() {
             var targetId = this.getAttribute('data-target');
@@ -113,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 textareaDiv.style.display = this.checked ? 'block' : 'none';
             }
         });
-        // Inicializa estado al cargar
+        // Inicializa el estado al cargar
         var targetId = checkbox.getAttribute('data-target');
         var textareaDiv = document.getElementById(targetId);
         if (textareaDiv) {
@@ -121,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Aspecto de Mejora
+    // Aspecto de Mejora (mostrar textarea)
     document.querySelectorAll('.aspecto-mejora-checkbox').forEach(function(checkbox) {
         checkbox.addEventListener('change', function() {
             var targetId = this.getAttribute('data-target');
@@ -130,6 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 textareaDiv.style.display = this.checked ? 'block' : 'none';
             }
         });
+        // Inicializa el estado al cargar
         var targetId = checkbox.getAttribute('data-target');
         var textareaDiv = document.getElementById(targetId);
         if (textareaDiv) {
@@ -145,22 +242,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 textareaDiv.style.display = this.value ? 'block' : 'none';
             }
         });
-        // Inicializa estado al cargar
+        // Inicializa el estado al cargar
         var textareaDiv = document.getElementById('evidencia-concepto-' + idx);
         if (textareaDiv) {
             textareaDiv.style.display = select.value ? 'block' : 'none';
         }
     });
 
-    // Popovers Bootstrap
-    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    // Popovers Bootstrap 5
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
     popoverTriggerList.forEach(function (popoverTriggerEl) {
-      new bootstrap.Popover(popoverTriggerEl, {
-        boundary: document.body,
-        html: true,
-        sanitize: false
-      })
+        new bootstrap.Popover(popoverTriggerEl, {
+            boundary: document.body,
+            html: true,
+            sanitize: false
+        });
     });
+
+    // Modal de recomendación
+    {% if mostrar_modal_recomendacion %}
+    let modal = new bootstrap.Modal(document.getElementById('recomendacionModal'));
+    modal.show();
+    {% endif %}
+
+    // Limitar a 2 checkboxes seleccionados en el modal
+    var checkboxes = document.querySelectorAll('.recomendacion-checkbox');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            let checked = document.querySelectorAll('.recomendacion-checkbox:checked');
+            if (checked.length > 2) {
+                this.checked = false;
+                alert('Solo puede seleccionar hasta dos recomendaciones.');
+            }
+        });
+    });
+
+    // Guardar recomendación y enviar formulario
+    var guardarBtn = document.getElementById('guardarRecomendacion');
+    if (guardarBtn) {
+        guardarBtn.addEventListener('click', function() {
+            let seleccionadas = Array.from(document.querySelectorAll('.recomendacion-checkbox:checked')).map(cb => cb.value);
+            if (seleccionadas.length === 0) {
+                alert('Debe seleccionar al menos una recomendación.');
+                return;
+            }
+            document.getElementById('recomendacionesInput').value = seleccionadas.join(',');
+            document.getElementById('ejecucionForm').submit();
+        });
+    }
 });
 </script>
 {% endblock %}

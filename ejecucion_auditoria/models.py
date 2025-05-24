@@ -13,10 +13,10 @@ class RequisitoAuditoria(models.Model):
 class EjecucionRequisito(models.Model):
     acta = models.ForeignKey(ActaAuditoria, on_delete=models.CASCADE, related_name='ejecuciones')
     requisito = models.ForeignKey(RequisitoAuditoria, on_delete=models.CASCADE)
-    cumple = models.BooleanField(default=False)
-    no_cumple = models.BooleanField(default=False)
-    no_aplica = models.BooleanField(default=False)
-    aspecto_mejora = models.BooleanField(default=False)
+    cumple = models.BooleanField(default=False, blank=True)
+    no_cumple = models.BooleanField(default=False, blank=True)
+    no_aplica = models.BooleanField(default=False, blank=True)
+    aspecto_mejora = models.BooleanField(default=False, blank=True)
     concepto_mejora = models.TextField(blank=True)
     concepto_no_conformidad = models.TextField(blank=True)
     evidencia = models.CharField(
@@ -35,6 +35,8 @@ class EjecucionRequisito(models.Model):
     concepto_evidencia = models.TextField(blank=True)
     imagen1 = models.ImageField(upload_to='evidencias/', blank=True, null=True)
     imagen2 = models.ImageField(upload_to='evidencias/', blank=True, null=True)
+    subsanado = models.BooleanField(default=False, blank=True)
+    como_se_subsano = models.TextField(blank=True, verbose_name="¿Cómo se subsanó la no conformidad?")
     # Puedes agregar campos como fecha de registro, usuario, etc.
 
     def __str__(self):
@@ -42,7 +44,7 @@ class EjecucionRequisito(models.Model):
 
 class NoConformidad(models.Model):
     ejecucion = models.OneToOneField(EjecucionRequisito, on_delete=models.CASCADE)
-    subsanado = models.BooleanField(default=False)
+    subsanado = models.BooleanField(default=False, blank=True)
     comentario_subsanacion = models.TextField(blank=True)
     fecha_subsanacion = models.DateField(blank=True, null=True)
 

@@ -1,0 +1,122 @@
+{% extends "layouts/base.html" %}
+{% load filters %}
+
+{% block content %}
+<h2 class="mb-4">Lista de Verificación - Auditoría</h2>
+
+<button class="btn btn-primary mb-3" onclick="window.print()">Imprimir Lista de Verificación</button>
+
+<table class="table">
+    <tr><th>Número de Servicio</th><td>{{ acta.plan.programacion.cotizacion.numero_servicio }}</td></tr>
+    <tr><th>Nombre del Propietario y/o Razón Social</th><td>{{ acta.plan.programacion.cotizacion.solicitud.nombre_establecimiento }}</td></tr>
+    <tr><th>Representante Legal</th><td>{{ acta.representante_legal_nombre }}</td></tr>
+    <tr><th>Establecimiento Comercial</th><td>{{ acta.plan.programacion.cotizacion.nombre_establecimiento }}</td></tr>
+    <tr><th>NIT</th><td>{{ acta.plan.programacion.cotizacion.cliente.nit }}</td></tr>
+    <tr><th>Dirección</th><td>{{ acta.plan.programacion.cotizacion.cliente.direccion }}</td></tr>
+    <tr><th>Ciudad</th><td>{{ acta.plan.programacion.cotizacion.cliente.ciudad }}</td></tr>
+    <tr><th>Departamento</th><td>{{ acta.plan.programacion.cotizacion.cliente.departamento }}</td></tr>
+    <tr><th>Teléfono</th><td>{{ acta.plan.programacion.cotizacion.cliente.telefono }}</td></tr>
+    <tr><th>Correo</th><td>{{ acta.plan.programacion.cotizacion.cliente.correo }}</td></tr>
+    <tr><th>Tipo de Servicio</th><td>{{ acta.plan.programacion.cotizacion.tipo_servicio }}</td></tr>
+    <tr><th>Fechas del Plan de Auditoría</th>
+        <td>
+            Etapa 1: {{ acta.plan.programacion.fecha_programacion_etapa1 }}<br>
+            {% for fecha in acta.plan.programacion.fechas_etapa2.all %}
+                Etapa 2: {{ fecha.fecha }}<br>
+            {% endfor %}
+        </td>
+    </tr>
+    <tr><th>Nivel del CEA</th><td>{{ acta.plan.programacion.nivel_auditoria }}</td></tr>
+    <tr><th>Categorías</th><td>{{ acta.plan.programacion.cotizacion.categorias }}</td></tr>
+    <tr><th>Checkpoint IAF MD4</th><td>{{ acta.plan.programacion.checkpoint_iaf_md4 }}</td></tr>
+    <tr><th>Auditor</th><td>{{ acta.plan.auditor.get_full_name }}</td></tr>
+</table>
+
+<h4 class="mt-4">Listado de Vehículos e Instructores</h4>
+{% if acta.plan.archivo_vehiculos_instructores %}
+  <a href="{{ acta.plan.archivo_vehiculos_instructores.url }}" target="_blank" class="btn btn-outline-info">
+    Descargar listado de vehículos e instructores
+  </a>
+{% else %}
+  <div class="alert alert-warning">No se ha cargado el archivo de vehículos e instructores en el plan de auditoría.</div>
+{% endif %}
+
+<h3 class="mt-4">Lista de Verificación</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Criterio/Requisito</th>
+            <th>Cumple</th>
+            <th>No Cumple</th>
+            <th>Aspecto de Mejora</th>
+            <th>No Aplica</th>
+            <th>Evidencia</th>
+            <th>Observaciones</th>
+            <th>Imágenes</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for ejec in ejecuciones %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+                {{ ejec.requisito.nombre }}<br>
+                <small>{{ ejec.requisito.descripcion }}</small><br>
+                <small>Checkpoint IAF MD4: {{ ejec.requisito.checkpoint_iaf_md4 }}</small>
+            </td>
+            <td>{% if ejec.cumple %}✔{% endif %}</td>
+            <td>{% if ejec.no_cumple %}✔{% endif %}</td>
+            <td>{% if ejec.aspecto_mejora %}✔{% endif %}</td>
+            <td>{% if ejec.no_aplica %}✔{% endif %}</td>
+            <td>
+                {{ ejec.get_evidencia_display }}
+                {% if ejec.concepto_evidencia %}
+                    <br><strong>Detalle:</strong> {{ ejec.concepto_evidencia }}
+                {% endif %}
+            </td>
+            <td>
+                {% if ejec.no_cumple %}
+                    {{ ejec.concepto_no_conformidad }}
+                {% elif ejec.aspecto_mejora %}
+                    {{ ejec.concepto_mejora }}
+                {% elif ejec.no_aplica %}
+                    No Aplica
+                {% endif %}
+            </td>
+            <td>
+                {% if ejec.imagen1 %}<img src="{{ ejec.imagen1.url }}" width="100">{% endif %}
+                {% if ejec.imagen2 %}<img src="{{ ejec.imagen2.url }}" width="100">{% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<button class="btn btn-secondary mt-3" onclick="window.print()">Imprimir Informe de Auditoría</button>
+
+<div class="alert alert-info mt-4">
+    <strong>Nota:</strong> Este documento se adjunta con el listado de vehículos e instructores cargado en el plan de auditoría.
+</div>
+
+{% if acta.recomendaciones %}
+  <div class="alert alert-info mt-3">
+    <strong>Recomendación del auditor:</strong>
+    {% for rec in acta.recomendaciones|split:"," %}
+      <span class="badge bg-success">{{ rec }}</span>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="mt-5">
+    <strong>Firma del auditor:</strong>
+    <br>
+    {% if acta.firma_auditor %}
+      <img src="{{ acta.firma_auditor.url }}" width="200">
+    {% else %}
+      ___________________________
+    {% endif %}
+    <br>
+    {{ acta.plan.auditor.get_full_name }}
+</div>
+{% endblock %}

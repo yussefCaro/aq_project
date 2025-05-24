@@ -1,9 +1,6 @@
-# documentacion_auditores/models.py
-
 from django.db import models
 from django.contrib.auth.models import User
 from programacion.models import ProgramacionAuditoria, NivelAuditoriaCEA
-
 
 class PlanAuditoria(models.Model):
     programacion = models.OneToOneField(ProgramacionAuditoria, on_delete=models.CASCADE)
@@ -26,22 +23,25 @@ class ActaAuditoria(models.Model):
     firma_auditor = models.ImageField(upload_to='documentacion/firmas/', null=True, blank=True)
     asistencia = models.TextField(help_text="Lista de asistentes con nombre, cargo y firmas")
     fecha_inicio = models.DateField()
-    fecha_cierre = models.DateField()
+    fecha_cierre = models.DateField(null=True, blank=True)
+    fecha_inicio_subsanacion = models.DateField(null=True, blank=True)
+    recomendaciones = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return f"Acta Auditoría - {self.plan.programacion.cotizacion.numero_servicio}"
 
+    def save(self, *args, **kwargs):
+        # Automatiza la asignación de fecha_inicio a la fecha de etapa 1 de la programación
+        if self.plan and self.plan.programacion and self.plan.programacion.fecha_programacion_etapa1:
+            self.fecha_inicio = self.plan.programacion.fecha_programacion_etapa1
+        super().save(*args, **kwargs)
 
-
-#controlar la asistencia como registros separados
 class AsistenteActa(models.Model):
     acta = models.ForeignKey(ActaAuditoria, on_delete=models.CASCADE, related_name='asistentes')
     nombre = models.CharField(max_length=255)
     cargo = models.CharField(max_length=100)
     firma_apertura = models.ImageField(upload_to='documentacion/firmas/', null=True, blank=True)
     firma_cierre = models.ImageField(upload_to='documentacion/firmas/', null=True, blank=True)
-
-# Modelo para la plantilla de actividades por nivel CEA
 
 class ActividadCEA(models.Model):
     nivel = models.ForeignKey(NivelAuditoriaCEA, on_delete=models.CASCADE)
@@ -51,8 +51,6 @@ class ActividadCEA(models.Model):
     def __str__(self):
         return f"{self.nivel} - {self.descripcion[:30]}"
 
-
-# Modelo para registrar la hora de cada actividad en el plan
 class HoraActividadPlan(models.Model):
     plan = models.ForeignKey(PlanAuditoria, on_delete=models.CASCADE, related_name='horas_actividades')
     actividad = models.ForeignKey(ActividadCEA, on_delete=models.CASCADE)
@@ -60,17 +58,10 @@ class HoraActividadPlan(models.Model):
     hora = models.TimeField()
 
     def __str__(self):
-        return f"{self.actividad.proceso} - {self.fecha} {self.hora}"
-
-from django.db import models
+        return f"{self.actividad.descripcion[:30]} - {self.fecha} {self.hora}"
 
 class VehiculoInstructor(models.Model):
-    # Otros campos que quieras (ejemplo: nombre, fecha, etc.)
     archivo_vehiculos_instructores = models.FileField(upload_to='vehiculos_instructores/')
 
     def __str__(self):
         return f"Archivo: {self.archivo_vehiculos_instructores.name}"
-
-
-
-

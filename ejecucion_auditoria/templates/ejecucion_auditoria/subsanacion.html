@@ -1,0 +1,201 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<h2 class="mb-4 text-danger fw-bold">
+    <i class="bi bi-exclamation-triangle"></i> Subsanación de No Conformidades
+</h2>
+
+{# Mensaje de advertencia o éxito #}
+{% if mensaje %}
+  <div class="alert alert-warning">{{ mensaje }}</div>
+{% endif %}
+
+{# Mostrar fecha de inicio, días transcurridos y días restantes #}
+{% if acta.fecha_inicio_subsanacion or dias_restantes is not None %}
+  <div class="alert alert-info mb-3">
+    {% if acta.fecha_inicio_subsanacion %}
+      Fecha de inicio de subsanación: {{ acta.fecha_inicio_subsanacion }}<br>
+      {% with dias_transcurridos=acta.fecha_inicio_subsanacion|timesince %}
+        Días transcurridos: {{ dias_transcurridos }}<br>
+      {% endwith %}
+    {% endif %}
+    {% if dias_restantes is not None %}
+      Días restantes para subsanar: <strong>{{ dias_restantes }}</strong>
+    {% endif %}
+  </div>
+{% endif %}
+
+{# Mensaje si se venció el plazo #}
+{% if dias_restantes is not None and dias_restantes < 0 %}
+  <div class="alert alert-danger">
+    ¡El plazo de 90 días para subsanar ha vencido!
+  </div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" id="subsanacionForm">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Criterio/Requisito</th>
+                    <th>Concepto No Conformidad</th>
+                    <th>¿Cómo se subsanó?</th>
+                    <th>Subsanado</th>
+                    <th>Evidencia</th>
+                    <th>Imágenes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in formset %}
+                <tr>
+                    {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        {{ form.instance.requisito.nombre }}
+                        <i class="bi bi-info-circle text-success ms-1"
+                           tabindex="0"
+                           data-bs-toggle="popover"
+                           data-bs-trigger="hover focus"
+                           data-bs-html="true"
+                           data-bs-custom-class="custom-popover"
+                           data-bs-content="{{ form.instance.requisito.descripcion|linebreaksbr }}">
+                        </i>
+                    </td>
+                    <td>{{ form.concepto_no_conformidad }}</td>
+                    <td>{{ form.como_se_subsano }}</td>
+                    <td>
+                        <div class="form-check">
+                            {{ form.subsanado }}
+                            <label class="form-check-label" for="{{ form.subsanado.id_for_label }}">Subsanado</label>
+                        </div>
+                    </td>
+                    <td>
+                        {{ form.evidencia }}
+                        {{ form.concepto_evidencia }}
+                    </td>
+                    <td>
+                        {{ form.imagen1 }}<br>
+                        {{ form.imagen2 }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <button type="submit" name="guardar" class="btn btn-success">Guardar subsanación</button>
+    <input type="hidden" name="recomendaciones" id="recomendacionesInput">
+</form>
+
+{# Botón Finalizar (fuera del form principal) #}
+{% if not pendientes_subsanar %}
+  <form method="post" action="{% url 'finalizar_subsanacion' acta.id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary mt-3">Finalizar</button>
+  </form>
+{% endif %}
+
+<!-- Modal de Recomendación -->
+<div class="modal fade" id="recomendacionModal" tabindex="-1" aria-labelledby="recomendacionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="recomendacionModalLabel">Recomendación del Auditor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Seleccione hasta dos recomendaciones:</label>
+        <div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Otorgar Certificado" id="rec1">
+            <label class="form-check-label" for="rec1">Otorgar Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Renovar Certificado" id="rec2">
+            <label class="form-check-label" for="rec2">Renovar Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Mantener Certificado" id="rec3">
+            <label class="form-check-label" for="rec3">Mantener Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Suspender el Certificado" id="rec4">
+            <label class="form-check-label" for="rec4">Suspender el Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Cancelar el Certificado" id="rec5">
+            <label class="form-check-label" for="rec5">Cancelar el Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Ampliar el alcance del Certificado" id="rec6">
+            <label class="form-check-label" for="rec6">Ampliar el alcance del Certificado</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input recomendacion-checkbox" type="checkbox" value="Reducir el Alcance del Certificado" id="rec7">
+            <label class="form-check-label" for="rec7">Reducir el Alcance del Certificado</label>
+          </div>
+        </div>
+        <div class="form-text">Puede seleccionar hasta dos opciones.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="guardarRecomendacion" class="btn btn-success">Guardar recomendación</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if mostrar_modal_recomendacion %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let modal = new bootstrap.Modal(document.getElementById('recomendacionModal'));
+    modal.show();
+});
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Limitar a 2 checkboxes seleccionados en el modal
+    var checkboxes = document.querySelectorAll('.recomendacion-checkbox');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            let checked = document.querySelectorAll('.recomendacion-checkbox:checked');
+            if (checked.length > 2) {
+                this.checked = false;
+                alert('Solo puede seleccionar hasta dos recomendaciones.');
+            }
+        });
+    });
+
+    // Guardar recomendación y enviar formulario
+    var guardarBtn = document.getElementById('guardarRecomendacion');
+    if (guardarBtn) {
+        guardarBtn.addEventListener('click', function() {
+            let seleccionadas = Array.from(document.querySelectorAll('.recomendacion-checkbox:checked')).map(cb => cb.value);
+            if (seleccionadas.length === 0) {
+                alert('Debe seleccionar al menos una recomendación.');
+                return;
+            }
+            document.getElementById('recomendacionesInput').value = seleccionadas.join(',');
+            bootstrap.Modal.getInstance(document.getElementById('recomendacionModal')).hide();
+            document.getElementById('subsanacionForm').submit();
+        });
+    }
+
+    // Inicializar popovers Bootstrap
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    popoverTriggerList.forEach(function (popoverTriggerEl) {
+        new bootstrap.Popover(popoverTriggerEl, {
+            boundary: document.body,
+            html: true,
+            sanitize: false
+        });
+    });
+});
+</script>
+{% endblock %}
