@@ -195,3 +195,19 @@ def reporte_auditoria(request, acta_id):
         'propietario': propietario,
         'ejecuciones': ejecuciones,
     })
+
+
+
+
+@login_required
+def informe_hallazgos(request, acta_id):
+    acta = get_object_or_404(ActaAuditoria, id=acta_id)
+    ejecuciones = EjecucionRequisito.objects.filter(acta=acta).order_by('requisito__id')
+    plan = acta.plan
+    programacion = plan.programacion
+    return render(request, 'ejecucion_auditoria/informe_hallazgos.html', {
+        'acta': acta,
+        'plan': plan,
+        'programacion': programacion,
+        'ejecuciones': ejecuciones,
+    })

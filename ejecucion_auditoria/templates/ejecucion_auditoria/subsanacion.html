@@ -32,6 +32,11 @@
   </div>
 {% endif %}
 
+<a href="{% url 'informe_hallazgos' acta.id %}" target="_blank" class="btn btn-primary mb-3">
+    Imprimir Informe de Hallazgos
+</a>
+
+
 <form method="post" enctype="multipart/form-data" id="subsanacionForm">
     {% csrf_token %}
     {{ formset.management_form }}

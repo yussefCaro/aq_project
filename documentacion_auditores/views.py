@@ -320,3 +320,5 @@ def asistentes_acta_view(request, acta_id):
             )
             formset = AsistenteFormSet(instance=acta)
     return render(request, 'documentacion_auditores/asistentes_acta_form.html', {'formset': formset, 'acta': acta})
+
+
