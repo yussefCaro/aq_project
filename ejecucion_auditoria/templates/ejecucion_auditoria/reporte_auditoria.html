@@ -51,8 +51,8 @@
             <th>No Cumple</th>
             <th>Aspecto de Mejora</th>
             <th>No Aplica</th>
+            <th>Subsanado</th>
             <th>Evidencia</th>
-            <th>Observaciones</th>
             <th>Imágenes</th>
         </tr>
     </thead>
@@ -65,23 +65,40 @@
                 <small>{{ ejec.requisito.descripcion }}</small><br>
                 <small>Checkpoint IAF MD4: {{ ejec.requisito.checkpoint_iaf_md4 }}</small>
             </td>
-            <td>{% if ejec.cumple %}✔{% endif %}</td>
-            <td>{% if ejec.no_cumple %}✔{% endif %}</td>
-            <td>{% if ejec.aspecto_mejora %}✔{% endif %}</td>
-            <td>{% if ejec.no_aplica %}✔{% endif %}</td>
+            <td>
+                {% if ejec.cumple %}✔{% endif %}
+            </td>
+            <td>
+                {% if ejec.no_cumple %}✔{% endif %}
+                {% if ejec.no_cumple and ejec.concepto_no_conformidad %}
+                    <div style="font-size: 0.95em; color: #444;">
+                        <strong>Motivo:</strong> {{ ejec.concepto_no_conformidad }}
+                    </div>
+                {% endif %}
+            </td>
+            <td>
+                {% if ejec.aspecto_mejora %}✔{% endif %}
+                {% if ejec.aspecto_mejora and ejec.concepto_mejora %}
+                    <div style="font-size: 0.95em; color: #444;">
+                        <strong>Observación:</strong> {{ ejec.concepto_mejora }}
+                    </div>
+                {% endif %}
+            </td>
+            <td>
+                {% if ejec.no_aplica %}✔{% endif %}
+            </td>
+            <td>
+                {% if ejec.subsanado %}✔{% endif %}
+                {% if ejec.como_se_subsano %}
+                    <div style="font-size: 0.95em; color: #2a6f2a;">
+                        <strong>¿Cómo se subsanó?</strong> {{ ejec.como_se_subsano }}
+                    </div>
+                {% endif %}
+            </td>
             <td>
                 {{ ejec.get_evidencia_display }}
                 {% if ejec.concepto_evidencia %}
                     <br><strong>Detalle:</strong> {{ ejec.concepto_evidencia }}
-                {% endif %}
-            </td>
-            <td>
-                {% if ejec.no_cumple %}
-                    {{ ejec.concepto_no_conformidad }}
-                {% elif ejec.aspecto_mejora %}
-                    {{ ejec.concepto_mejora }}
-                {% elif ejec.no_aplica %}
-                    No Aplica
                 {% endif %}
             </td>
             <td>
