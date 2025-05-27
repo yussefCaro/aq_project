@@ -1,37 +1,86 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 {% extends 'layouts/base.html' %}
+{% load humanize %}
+{% load widget_tweaks %}
+
+
 {% block content %}
-<body >
-    <h2 class="text-primary">Crear Cotización</h2>
-    <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+<div class="container mt-4">
+    <h2 class="text-primary mb-4">Crear Cotización</h2>
+    <form method="post" class="card p-4 shadow" style="max-width: 600px;">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
 
-    <label for="id_precio_iva"></label>
+        <div class="mb-3">
+            <label for="{{ form.numero_servicio.id_for_label }}" class="form-label">Número de Servicio:</label>
+            {{ form.numero_servicio|add_class:"form-control" }}
+        </div>
 
+        <div class="mb-3">
+            <label for="{{ form.tipo_servicio.id_for_label }}" class="form-label">Tipo de Servicio:</label>
+            {{ form.tipo_servicio }}
+        </div>
 
-    <label for="id_precio_total"></label>
+        <div class="mb-3">
+            <label for="id_precio_neto" class="form-label">Precio neto:</label>
+            <input type="number" id="id_precio_neto" name="precio_neto" class="form-control" value="{{ form.precio_neto.value|default:0 }}" step="0.01" required>
+            <span class="text-muted ms-2">
+                ({{ form.precio_neto.value|floatformat:2|intcomma }})
+            </span>
+            <span class="ms-2">Valor sin IVA</span>
+        </div>
 
+        <div class="mb-3">
+            <label for="id_precio_iva" class="form-label">IVA (19%):</label>
+            <input type="hidden" id="id_precio_iva" name="precio_iva">
+            <input type="text" id="id_precio_iva_visible" class="form-control" value="{{ form.precio_iva.value|default:0|floatformat:2|intcomma }}" readonly>
+        </div>
 
-    <button type="submit">Guardar Cotización</button>
+        <div class="mb-3">
+            <label for="id_precio_total" class="form-label"><strong>Total:</strong></label>
+            <input type="hidden" id="id_precio_total" name="precio_total">
+            <input type="text" id="id_precio_total_visible" class="form-control" value="{{ form.precio_total.value|default:0|floatformat:2|intcomma }}" readonly>
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.estado.id_for_label }}" class="form-label">Estado:</label>
+            {{ form.estado|add_class:"form-select" }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.fecha_cotizacion.id_for_label }}" class="form-label">Fecha cotización:</label>
+            {{ form.fecha_cotizacion|add_class:"form-control" }}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Guardar Cotización</button>
     </form>
+</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         let precioNetoInput = document.getElementById("id_precio_neto");
         let precioIVAInput = document.getElementById("id_precio_iva");
+        let precioIVAVisible = document.getElementById("id_precio_iva_visible");
         let precioTotalInput = document.getElementById("id_precio_total");
+        let precioTotalVisible = document.getElementById("id_precio_total_visible");
 
-        precioNetoInput.addEventListener("input", function() {
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(value);
+        }
+
+        function actualizarValores() {
             let precioNeto = parseFloat(precioNetoInput.value) || 0;
-            let iva = precioNeto * 0.19;  // 19% de IVA
+            let iva = precioNeto * 0.19;
             let total = precioNeto + iva;
 
             precioIVAInput.value = iva.toFixed(2);
+            precioIVAVisible.value = formatCurrency(iva);
+
             precioTotalInput.value = total.toFixed(2);
-        });
+            precioTotalVisible.value = formatCurrency(total);
+        }
+
+        precioNetoInput.addEventListener("input", actualizarValores);
+        actualizarValores();
     });
 </script>
-
-</body>
 {% endblock %}
-</html>

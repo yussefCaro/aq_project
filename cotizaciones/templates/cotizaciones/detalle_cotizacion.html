@@ -1,6 +1,7 @@
 {% extends 'layouts/base.html' %}
+{% load humanize mathfilters %}
 
-{% block title %}Editar Cotización{% endblock %}
+{% block title %}Detalles de la Cotización{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -15,7 +16,16 @@
                     <p><strong>ID:</strong> {{ cotizacion.id }}</p>
                     <p><strong>Cliente:</strong> {{ cliente.nombre_propietario }}</p>
                     <p><strong>Estado:</strong> <span class="badge bg-info">{{ cotizacion.solicitud.estado }}</span></p>
-                    <p><strong>Precio Neto:</strong> ${{ cotizacion.precio_neto }}</p>
+                    <p>
+                        <strong>Precio Neto:</strong>
+                        ${{ cotizacion.precio_neto|floatformat:2|intcomma }}<br>
+                        <strong>IVA (19%):</strong>
+                        ${{ cotizacion.precio_neto|mul:"0.19"|floatformat:2|intcomma }}<br>
+                        <strong class="text-success">Precio Total (con IVA):</strong>
+                        ${{ cotizacion.precio_neto|mul:"1.19"|floatformat:2|intcomma }}
+                        <br>
+                        <span class="text-muted"><em>Precio con IVA incluido</em></span>
+                    </p>
                 </div>
                 <div class="col-md-6">
                     <p><strong>Número de Servicio:</strong> {{ cotizacion.numero_servicio }}</p>
@@ -66,6 +76,16 @@
                     </tr>
                 </tbody>
             </table>
+
+            <div class="mt-5">
+                <strong>Firma de aprobación del cliente:</strong>
+                <br><br>
+                ___________________________
+                <br>
+                Nombre y Firma del Cliente
+                <br>
+                Fecha: ____________________
+            </div>
         {% else %}
             <div class="alert alert-danger text-center">
                 No se encontró la cotización.
@@ -73,5 +93,4 @@
         {% endif %}
     </div>
 </div>
-
 {% endblock %}

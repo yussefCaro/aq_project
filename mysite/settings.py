@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'documentacion_auditores',
     'ejecucion_auditoria',
+    'widget_tweaks',
+    'mathfilters',
 
 ]
 
