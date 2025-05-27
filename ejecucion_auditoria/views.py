@@ -45,6 +45,9 @@ def ejecucion_auditoria(request, acta_id):
         # --- FIN BLOQUE NUEVO ---
 
         formset = EjecucionFormSet(request.POST, request.FILES, queryset=queryset)
+        if 'finalizar' in request.POST:
+            formset.validar_completo = True
+
         if formset.is_valid():
             formset.save()
             if 'finalizar' in request.POST:

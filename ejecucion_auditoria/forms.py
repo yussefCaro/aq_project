@@ -5,7 +5,15 @@ from django import forms
 class EjecucionBaseFormSet(BaseModelFormSet):
     def clean(self):
         super().clean()
-        # Validación desactivada para permitir guardar avances incompletos
+        # Solo valida si se activa el flag desde la vista
+        if getattr(self, 'validar_completo', False):
+            for i, form in enumerate(self.forms):
+                if not form.cleaned_data.get('DELETE', False):
+                    campos_obligatorios = ['cumple', 'no_cumple', 'no_aplica']
+                    if not any(form.cleaned_data.get(campo) for campo in campos_obligatorios):
+                        raise ValidationError(
+                            f"Fila {i+1} sin diligenciar: debe marcar al menos una opción (Cumple, No Cumple o No Aplica)."
+                        )
 
 class EjecucionRequisitoForm(forms.ModelForm):
     class Meta:
