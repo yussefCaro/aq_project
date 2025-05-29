@@ -5,26 +5,54 @@
     <i class="bi bi-clipboard-check"></i> Ejecución de Auditoría
 </h2>
 
-{# Mensajes de error/success #}
 {% if messages %}
   {% for message in messages %}
     <div class="alert alert-{{ message.tags }}">{{ message }}</div>
   {% endfor %}
 {% endif %}
 
+{# Mostrar errores de validación #}
+{% if form.errors %}
+  <div class="alert alert-danger">{{ form.errors }}</div>
+{% endif %}
+{% if formset.non_form_errors %}
+  <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+{% endif %}
+
 <form method="post" enctype="multipart/form-data" id="ejecucionForm">
     {% csrf_token %}
     {{ formset.management_form }}
 
-    {% if formset.non_form_errors %}
-      <div class="alert alert-danger mt-3">
-        <ul>
-          {% for error in formset.non_form_errors %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
+    <!-- ============================ -->
+    <!-- CAMBIO: Campos del formulario principal -->
+    <div class="mb-4">
+        <label for="{{ form.representante_legal_nombre.id_for_label }}" class="form-label">
+            Nombre del representante legal:
+        </label>
+        {{ form.representante_legal_nombre }}
+        {% if form.representante_legal_nombre.errors %}
+            <div class="text-danger">{{ form.representante_legal_nombre.errors }}</div>
+        {% endif %}
+    </div>
+    <div class="mb-4">
+        <label for="{{ form.representante_legal_cargo.id_for_label }}" class="form-label">
+            Cargo del representante legal:
+        </label>
+        {{ form.representante_legal_cargo }}
+        {% if form.representante_legal_cargo.errors %}
+            <div class="text-danger">{{ form.representante_legal_cargo.errors }}</div>
+        {% endif %}
+    </div>
+    <div class="mb-4">
+        <label for="{{ form.fecha_inicio.id_for_label }}" class="form-label">
+            Fecha de inicio:
+        </label>
+        {{ form.fecha_inicio }}
+        {% if form.fecha_inicio.errors %}
+            <div class="text-danger">{{ form.fecha_inicio.errors }}</div>
+        {% endif %}
+    </div>
+    <!-- ============================ -->
 
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
@@ -43,9 +71,7 @@
             <tbody>
                 {% for form in formset %}
                 <tr class="fila-criterio">
-                    {% for hidden in form.hidden_fields %}
-                        {{ hidden }}
-                    {% endfor %}
+                    {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
                     <td>{{ forloop.counter }}</td>
                     <td>
                         {{ form.instance.requisito.nombre }}
@@ -66,30 +92,20 @@
                     </td>
                     <td>
                         <div class="form-check">
-                            <input type="checkbox"
-                                   class="form-check-input no-cumple-checkbox mutuamente-excluyente"
-                                   id="id_no_cumple_{{ forloop.counter0 }}"
-                                   name="{{ form.no_cumple.html_name }}"
-                                   data-target="no-conformidad-{{ forloop.counter0 }}"
-                                   {% if form.no_cumple.value %}checked{% endif %}>
-                            <label class="form-check-label" for="id_no_cumple_{{ forloop.counter0 }}">No Cumple</label>
+                            {{ form.no_cumple }}
+                            <label class="form-check-label" for="{{ form.no_cumple.id_for_label }}">No Cumple</label>
                         </div>
-                        <div class="mt-2" id="no-conformidad-{{ forloop.counter0 }}"
+                        <div class="mt-2" id="no-conformidad-{{ form.prefix }}"
                              style="display: {% if form.no_cumple.value %}block{% else %}none{% endif %};">
                             {{ form.concepto_no_conformidad }}
                         </div>
                     </td>
                     <td>
                         <div class="form-check">
-                            <input type="checkbox"
-                                   class="form-check-input aspecto-mejora-checkbox mutuamente-excluyente"
-                                   id="id_aspecto_mejora_{{ forloop.counter0 }}"
-                                   name="{{ form.aspecto_mejora.html_name }}"
-                                   data-target="mejora-{{ forloop.counter0 }}"
-                                   {% if form.aspecto_mejora.value %}checked{% endif %}>
-                            <label class="form-check-label" for="id_aspecto_mejora_{{ forloop.counter0 }}">Aspecto de Mejora</label>
+                            {{ form.aspecto_mejora }}
+                            <label class="form-check-label" for="{{ form.aspecto_mejora.id_for_label }}">Aspecto de Mejora</label>
                         </div>
-                        <div class="mt-2" id="mejora-{{ forloop.counter0 }}"
+                        <div class="mt-2" id="mejora-{{ form.prefix }}"
                              style="display: {% if form.aspecto_mejora.value %}block{% else %}none{% endif %};">
                             {{ form.concepto_mejora }}
                         </div>
@@ -101,15 +117,8 @@
                         </div>
                     </td>
                     <td>
-                        <select name="{{ form.evidencia.html_name }}"
-                                class="form-select evidencia-select"
-                                id="id_evidencia_{{ forloop.counter0 }}">
-                            <option value="">---------</option>
-                            {% for val, label in form.fields.evidencia.choices %}
-                                <option value="{{ val }}" {% if form.evidencia.value == val %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                        <div class="mt-2" id="evidencia-concepto-{{ forloop.counter0 }}"
+                        {{ form.evidencia }}
+                        <div class="mt-2" id="evidencia-concepto-{{ form.prefix }}"
                              style="display: {% if form.evidencia.value %}block{% else %}none{% endif %};">
                             {{ form.concepto_evidencia }}
                         </div>
@@ -124,12 +133,30 @@
         </table>
     </div>
 
+    <!-- ============================ -->
+    <!-- CAMBIO: Textarea de aspectos relevantes -->
+    <div class="mb-4">
+        <label for="{{ form.aspectos_relevantes.id_for_label }}" class="form-label">
+            Aspectos relevantes del servicio auditado:
+        </label>
+        {{ form.aspectos_relevantes }}
+        {% if form.aspectos_relevantes.errors %}
+            <div class="text-danger">{{ form.aspectos_relevantes.errors }}</div>
+        {% endif %}
+    </div>
+    <!-- ============================ -->
+
     <div class="boton-flotante">
         <button type="submit" name="guardar" class="btn btn-success me-2">Guardar avance</button>
         <button type="submit" name="finalizar" class="btn btn-primary">Finalizar</button>
     </div>
     <input type="hidden" name="recomendaciones" id="recomendacionesInput">
 </form>
+
+
+
+
+
 
 <!-- Modal de Recomendación -->
 <div class="modal fade" id="recomendacionModal" tabindex="-1" aria-labelledby="recomendacionModalLabel" aria-hidden="true">

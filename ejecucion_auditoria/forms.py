@@ -16,6 +16,7 @@ class EjecucionBaseFormSet(BaseModelFormSet):
                         )
 
 class EjecucionRequisitoForm(forms.ModelForm):
+
     class Meta:
         model = EjecucionRequisito
         fields = [
@@ -28,6 +29,7 @@ class EjecucionRequisitoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.fields['concepto_no_conformidad'].widget.attrs['readonly'] = True
         self.fields['concepto_no_conformidad'].widget.attrs['style'] = 'background:#f8f9fa;'
         # Agrega los atributos personalizados a los checkboxes usando el prefix único

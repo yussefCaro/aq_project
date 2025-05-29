@@ -5,18 +5,21 @@ from django.utils import timezone
 from django.contrib import messages
 from datetime import date
 
+from documentacion_auditores.forms import ActaAuditoriaForm
 from .forms import EjecucionBaseFormSet, EjecucionRequisitoForm
 from documentacion_auditores.models import ActaAuditoria
 from ejecucion_auditoria.models import RequisitoAuditoria, EjecucionRequisito
 
 @login_required
 def ejecucion_auditoria(request, acta_id):
+    print("Vista ejecutada")
     acta = get_object_or_404(ActaAuditoria, id=acta_id)
     requisitos = RequisitoAuditoria.objects.all()
     queryset = EjecucionRequisito.objects.filter(acta=acta).order_by('requisito__id')
 
     EjecucionFormSet = modelformset_factory(
         EjecucionRequisito,
+        form=EjecucionRequisitoForm,
         fields=[
             'cumple', 'no_cumple', 'no_aplica',
             'aspecto_mejora', 'concepto_mejora',
@@ -35,6 +38,14 @@ def ejecucion_auditoria(request, acta_id):
         queryset = EjecucionRequisito.objects.filter(acta=acta).order_by('requisito__id')
 
     if request.method == 'POST':
+        form = ActaAuditoriaForm(request.POST, request.FILES, instance=acta)
+        formset = EjecucionFormSet(request.POST, request.FILES, queryset=queryset, prefix='form')  # <-- Añade prefix aquí
+
+        # Imprime los errores si alguno no es válido
+        if not form.is_valid() or not formset.is_valid():
+            print("Form errors:", form.errors)
+            print("Formset errors:", formset.errors)
+
         # --- NUEVO BLOQUE: Manejo de recomendaciones ---
         recomendaciones = request.POST.get('recomendaciones')
         if recomendaciones:
@@ -44,12 +55,13 @@ def ejecucion_auditoria(request, acta_id):
             return redirect('reporte_auditoria', acta_id=acta.id)
         # --- FIN BLOQUE NUEVO ---
 
-        formset = EjecucionFormSet(request.POST, request.FILES, queryset=queryset)
         if 'finalizar' in request.POST:
             formset.validar_completo = True
 
-        if formset.is_valid():
+        if form.is_valid() and formset.is_valid():
+            form.save()
             formset.save()
+
             if 'finalizar' in request.POST:
                 hay_no_conformidades = any(
                     form.cleaned_data.get('no_cumple') for form in formset.forms
@@ -67,6 +79,7 @@ def ejecucion_auditoria(request, acta_id):
                     return render(request, 'ejecucion_auditoria/ejecucion_auditoria.html', {
                         'acta': acta,
                         'formset': formset,
+                        'form': form,
                         'mostrar_modal_recomendacion': True,
                     })
             else:
@@ -74,17 +87,95 @@ def ejecucion_auditoria(request, acta_id):
                 return redirect('ejecucion_auditoria', acta_id=acta.id)
         # Si hay errores, el template los mostrará automáticamente
     else:
-        formset = EjecucionFormSet(queryset=queryset)
+        form = ActaAuditoriaForm(instance=acta)
+        formset = EjecucionFormSet(queryset=queryset, prefix='form')
 
     return render(request, 'ejecucion_auditoria/ejecucion_auditoria.html', {
         'acta': acta,
         'formset': formset,
+        'form': form,
     })
+
 
 
 
 @login_required
 def subsanacion_no_conformidades(request, acta_id):
+    acta = get_object_or_404(ActaAuditoria, id=acta_id)
+    queryset = EjecucionRequisito.objects.filter(acta=acta, no_cumple=True)
+
+    EjecucionFormSet = modelformset_factory(
+        EjecucionRequisito,
+        form=EjecucionRequisitoForm,
+        fields=[
+            'cumple', 'no_cumple', 'no_aplica',
+            'aspecto_mejora', 'concepto_mejora',
+            'concepto_no_conformidad', 'evidencia',
+            'concepto_evidencia', 'imagen1', 'imagen2',
+            'subsanado', 'como_se_subsano'
+        ],
+        extra=0,
+        can_delete=False,
+    )
+
+    if request.method == 'POST':
+        # --- Lógica para guardar recomendación y redirigir al reporte ---
+        recomendaciones = request.POST.get('recomendaciones')
+        if recomendaciones:
+            acta.recomendaciones = recomendaciones
+            acta.save()
+            messages.success(request, "¡Recomendación guardada exitosamente!")
+            return redirect('reporte_auditoria', acta_id=acta.id)
+        # --- Fin lógica recomendación ---
+
+        formset = EjecucionFormSet(request.POST, request.FILES, queryset=queryset, prefix='form')
+        if formset.is_valid():
+            formset.save()
+            pendientes_subsanar = formset.queryset.filter(no_cumple=True, subsanado=False).exists()
+            dias_restantes = None
+            if acta.fecha_inicio_subsanacion:
+                dias_restantes = 90 - (date.today() - acta.fecha_inicio_subsanacion).days
+
+            if 'guardar' in request.POST:
+                # Solo guardar avances, recarga la página de subsanación
+                messages.success(request, "¡Avance guardado exitosamente!")
+                return render(request, 'ejecucion_auditoria/subsanacion.html', {
+                    'formset': formset,
+                    'mensaje': None,
+                    'acta': acta,
+                    'dias_restantes': dias_restantes,
+                    'pendientes_subsanar': pendientes_subsanar,
+                })
+            # Si no quedan pendientes y no es guardar, redirige a finalizar
+            if not pendientes_subsanar:
+                return redirect('finalizar_subsanacion', acta_id=acta.id)
+            else:
+                mensaje = "Aún existen no conformidades pendientes por subsanar."
+                messages.warning(request, mensaje)
+                return render(request, 'ejecucion_auditoria/subsanacion.html', {
+                    'formset': formset,
+                    'mensaje': mensaje,
+                    'acta': acta,
+                    'dias_restantes': dias_restantes,
+                    'pendientes_subsanar': pendientes_subsanar,
+                })
+    else:
+        formset = EjecucionFormSet(queryset=queryset, prefix='form')
+        pendientes_subsanar = formset.queryset.filter(no_cumple=True, subsanado=False).exists()
+
+    mensaje = request.session.pop('mensaje_subsanacion', None)
+    dias_restantes = None
+    if acta.fecha_inicio_subsanacion:
+        dias_restantes = 90 - (date.today() - acta.fecha_inicio_subsanacion).days
+
+    return render(request, 'ejecucion_auditoria/subsanacion.html', {
+        'formset': formset,
+        'mensaje': mensaje,
+        'acta': acta,
+        'dias_restantes': dias_restantes,
+        'pendientes_subsanar': pendientes_subsanar,
+    })
+
     acta = get_object_or_404(ActaAuditoria, id=acta_id)
     queryset = EjecucionRequisito.objects.filter(acta=acta, no_cumple=True)
 

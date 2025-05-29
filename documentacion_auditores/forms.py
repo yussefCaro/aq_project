@@ -10,7 +10,22 @@ class ActaAuditoriaForm(forms.ModelForm):
     class Meta:
         model = ActaAuditoria
         fields = ['representante_legal_nombre', 'representante_legal_cargo',
-                  'firma_representante', 'firma_auditor', 'fecha_inicio', 'fecha_cierre']
+                  'firma_representante', 'firma_auditor', 'fecha_inicio', 'fecha_cierre',
+                  'aspectos_relevantes',]
+        widgets = {
+            'aspectos_relevantes': forms.Textarea(attrs={
+                'rows': 4,
+                'placeholder': 'Describa aquí los aspectos relevantes observados durante la auditoría',
+                'class': 'form-control',
+                'representante_legal_nombre': forms.HiddenInput(),
+                'representante_legal_cargo': forms.HiddenInput(),
+                'fecha_inicio': forms.HiddenInput(),
+
+
+
+
+            }),
+        }
 
 class AsistenteActaForm(forms.ModelForm):
     class Meta:
