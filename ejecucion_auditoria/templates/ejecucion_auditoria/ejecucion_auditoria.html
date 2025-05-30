@@ -12,11 +12,12 @@
 {% endif %}
 
 {# Mostrar errores de validación #}
-{% if form.errors %}
-  <div class="alert alert-danger">{{ form.errors }}</div>
-{% endif %}
 {% if formset.non_form_errors %}
-  <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+    <div class="alert alert-danger">
+        {% for error in formset.non_form_errors %}
+            {{ error }}
+        {% endfor %}
+    </div>
 {% endif %}
 
 <form method="post" enctype="multipart/form-data" id="ejecucionForm">
@@ -262,19 +263,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Evidencia (select)
-    document.querySelectorAll('.evidencia-select').forEach(function(select, idx) {
-        select.addEventListener('change', function() {
-            var textareaDiv = document.getElementById('evidencia-concepto-' + idx);
-            if (textareaDiv) {
-                textareaDiv.style.display = this.value ? 'block' : 'none';
-            }
-        });
-        // Inicializa el estado al cargar
-        var textareaDiv = document.getElementById('evidencia-concepto-' + idx);
+    document.querySelectorAll('.evidencia-select').forEach(function(select) {
+    select.addEventListener('change', function() {
+        var targetId = this.getAttribute('data-target');
+        var textareaDiv = document.getElementById(targetId);
         if (textareaDiv) {
-            textareaDiv.style.display = select.value ? 'block' : 'none';
+            textareaDiv.style.display = this.value ? 'block' : 'none';
         }
     });
+    // Inicializa el estado al cargar
+    var targetId = select.getAttribute('data-target');
+    var textareaDiv = document.getElementById(targetId);
+    if (textareaDiv) {
+        textareaDiv.style.display = select.value ? 'block' : 'none';
+    }
+});
 
     // Popovers Bootstrap 5
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));

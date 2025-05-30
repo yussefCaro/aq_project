@@ -30,7 +30,7 @@ class EjecucionRequisitoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['concepto_no_conformidad'].widget.attrs['readonly'] = True
+
         self.fields['concepto_no_conformidad'].widget.attrs['style'] = 'background:#f8f9fa;'
         # Agrega los atributos personalizados a los checkboxes usando el prefix único
         self.fields['no_cumple'].widget.attrs.update({
@@ -41,3 +41,8 @@ class EjecucionRequisitoForm(forms.ModelForm):
             'class': 'form-check-input aspecto-mejora-checkbox mutuamente-excluyente',
             'data-target': f'mejora-{self.prefix}'
         })
+        self.fields['evidencia'].widget.attrs.update({
+            'class': 'form-select evidencia-select',
+            'data-target': f'evidencia-concepto-{self.prefix}'
+        })
+
