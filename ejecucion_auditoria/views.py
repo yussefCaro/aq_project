@@ -114,7 +114,7 @@ def subsanacion_no_conformidades(request, acta_id):
         EjecucionRequisito,
         form=EjecucionRequisitoForm,
         fields=[
-            'cumple', 'no_cumple', 'no_aplica',
+            #'cumple', 'no_cumple', 'no_aplica',
             'aspecto_mejora', 'concepto_mejora',
             'concepto_no_conformidad', 'evidencia',
             'concepto_evidencia', 'imagen1', 'imagen2',

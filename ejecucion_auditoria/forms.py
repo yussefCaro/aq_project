@@ -9,7 +9,8 @@ class EjecucionBaseFormSet(BaseModelFormSet):
         if getattr(self, 'validar_completo', False):
             for i, form in enumerate(self.forms):
                 if not form.cleaned_data.get('DELETE', False):
-                    campos_obligatorios = ['cumple', 'no_cumple', 'no_aplica']
+                    campos_obligatorios = [campo for campo in ['cumple', 'no_cumple', 'no_aplica'] if campo in form.cleaned_data]
+
                     if not any(form.cleaned_data.get(campo) for campo in campos_obligatorios):
                         raise ValidationError(
                             f"Fila {i+1} sin diligenciar: debe marcar al menos una opción (Cumple, No Cumple o No Aplica)."
@@ -30,19 +31,25 @@ class EjecucionRequisitoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-
         self.fields['concepto_no_conformidad'].widget.attrs['style'] = 'background:#f8f9fa;'
-        # Agrega los atributos personalizados a los checkboxes usando el prefix único
-        self.fields['no_cumple'].widget.attrs.update({
-            'class': 'form-check-input no-cumple-checkbox mutuamente-excluyente',
-            'data-target': f'no-conformidad-{self.prefix}'
-        })
-        self.fields['aspecto_mejora'].widget.attrs.update({
-            'class': 'form-check-input aspecto-mejora-checkbox mutuamente-excluyente',
-            'data-target': f'mejora-{self.prefix}'
-        })
-        self.fields['evidencia'].widget.attrs.update({
-            'class': 'form-select evidencia-select',
-            'data-target': f'evidencia-concepto-{self.prefix}'
-        })
+
+        # Solo agrega atributos si el campo está presente en el formulario
+        if 'no_cumple' in self.fields:
+            self.fields['no_cumple'].widget.attrs.update({
+                'class': 'form-check-input no-cumple-checkbox mutuamente-excluyente',
+                'data-target': f'no-conformidad-{self.prefix}'
+            })
+
+        if 'aspecto_mejora' in self.fields:
+            self.fields['aspecto_mejora'].widget.attrs.update({
+                'class': 'form-check-input aspecto-mejora-checkbox mutuamente-excluyente',
+                'data-target': f'mejora-{self.prefix}'
+            })
+
+        if 'evidencia' in self.fields:
+            self.fields['evidencia'].widget.attrs.update({
+                'class': 'form-select evidencia-select',
+                'data-target': f'evidencia-concepto-{self.prefix}'
+            })
+
 

@@ -49,6 +49,16 @@
         <tr><th>Auditor</th><td>{{ acta.plan.auditor.get_full_name }}</td></tr>
     </table>
 
+    {% if acta.aspectos_relevantes %}
+        <h4 class="mt-4">Aspectos relevantes del servicio auditado</h4>
+        <div class="mb-3">
+            <p>{{ acta.aspectos_relevantes|linebreaks }}</p>
+        </div>
+    {% endif %}
+
+
+
+
     <h4 class="mt-4">Aspectos de Mejora</h4>
     <table class="table table-bordered">
         <thead>
@@ -79,6 +89,7 @@
                 <th>Criterio/Requisito</th>
                 <th>Motivo</th>
                 <th>¿Cómo se subsanó?</th>
+                <th>Subsanado</th>
                 <th>Firma Representante Legal</th>
                 <th>Firma Auditor</th>
                 <th>Fecha</th>
@@ -92,6 +103,13 @@
                 <td>{{ ejec.requisito.nombre }}</td>
                 <td>{{ ejec.concepto_no_conformidad }}</td>
                 <td>{{ ejec.como_se_subsano }}</td>
+                <td>
+                    {% if ejec.subsanado %}
+                        ✔
+                    {% else %}
+                        ✘
+                    {% endif %}
+                </td>
                 <td style="height: 60px;"></td>
                 <td style="height: 60px;"></td>
                 <td>
@@ -106,6 +124,7 @@
         {% endfor %}
         </tbody>
     </table>
+
 
     <div class="mt-5">
         <strong>Firmas finales de aceptación del documento:</strong>
