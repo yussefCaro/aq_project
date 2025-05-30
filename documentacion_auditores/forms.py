@@ -11,7 +11,10 @@ class ActaAuditoriaForm(forms.ModelForm):
         model = ActaAuditoria
         fields = ['representante_legal_nombre', 'representante_legal_cargo',
                   'firma_representante', 'firma_auditor', 'fecha_inicio', 'fecha_cierre',
-                  'aspectos_relevantes',]
+                  'aspectos_relevantes',
+                  'universo_normal', 'poblacion_normal', 'muestra_normal',
+                  'universo_reducido', 'poblacion_reducido', 'muestra_reducido',
+                  ]
         widgets = {
             'aspectos_relevantes': forms.Textarea(attrs={
                 'rows': 4,

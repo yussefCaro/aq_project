@@ -55,6 +55,64 @@
     </div>
     <!-- ============================ -->
 
+    <!-- === BLOQUE DE PLAN DE MUESTREO AQUÍ === -->
+<div style="background: #eaf6fb; border: 1px solid #b6d4e7; padding: 12px; margin-bottom: 18px; font-size: 1em;">
+    <strong>NOTA: EL PLAN DE MUESTREO APLICA PARA LOS REGISTROS DE ESTUDIANTES</strong>
+    (Inscripción, contrato, registros de clases, evaluaciones, datos en plataformas informáticas, etc. que apliquen a los alumnos),
+    <strong>DEBIDO A QUE SON EL REQUISITO CON MAYOR VOLUMEN DE REGISTROS, TODOS LOS DEMÁS REGISTROS (vehículos, instructores, documentación de cumplimiento de regulaciones, etc.) SE REVISAN AL 100%.</strong>
+    <br>
+    <div style="margin-top: 6px; font-size: 0.98em;">
+        <strong>En caso en que el muestreo no cumpla o se encuentre dentro de los parámetros Ac-Re, se realizará un plan con NAC de 2.5%, Normal, Tipo General 1A (Algo Complejo), Inspección normal para ISO 2859-1.</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-top: 12px;">
+        <div style="width: 48%; text-align: center;">
+            <strong>PLAN DE INSPECCIÓN MUESTREO NORMAL</strong><br>
+            <table style="margin: 0 auto;">
+                <tr>
+                    <td style="text-align: right;">UNIVERSO:</td>
+                    <td style="padding-left:8px;">{{ form.universo_normal }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">POBLACIÓN:</td>
+                    <td style="padding-left:8px;">{{ form.poblacion_normal }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">MUESTRA:</td>
+                    <td style="padding-left:8px;">{{ form.muestra_normal }}</td>
+                </tr>
+            </table>
+        </div>
+        <div style="width: 48%; text-align: center;">
+            <strong>PLAN DE INSPECCIÓN MUESTREO REDUCIDO</strong><br>
+            <table style="margin: 0 auto;">
+                <tr>
+                    <td style="text-align: right;">UNIVERSO:</td>
+                    <td style="padding-left:8px;">{{ form.universo_reducido }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">POBLACIÓN:</td>
+                    <td style="padding-left:8px;">{{ form.poblacion_reducido }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">MUESTRA:</td>
+                    <td style="padding-left:8px;">{{ form.muestra_reducido }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div style="margin-top: 10px; font-size: 0.93em;">
+        <span style="display:inline-block; width: 49%; vertical-align: top;">
+            <strong>NOTA:</strong> Totalidad de individuos o elementos en los cuales puede presentarse determinada característica susceptible a ser estudiada.<br>
+            <strong>NOTA:</strong> Parte del universo en la cual vamos a basar el estudio.
+        </span>
+        <span style="display:inline-block; width: 49%; vertical-align: top;">
+            <strong>NOTA:</strong> Parte o subconjunto de la población, también conocida como población muestral.
+        </span>
+    </div>
+</div>
+<!-- === FIN DEL BLOQUE DE PLAN DE MUESTREO === -->
+
+
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-dark">

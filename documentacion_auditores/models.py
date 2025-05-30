@@ -27,6 +27,12 @@ class ActaAuditoria(models.Model):
     fecha_inicio_subsanacion = models.DateField(null=True, blank=True)
     recomendaciones = models.CharField(max_length=200, blank=True)
     aspectos_relevantes = models.TextField("Aspectos relevantes del servicio auditado", blank=True)
+    universo_normal = models.PositiveIntegerField("Universo (Normal)", default=0)
+    poblacion_normal = models.PositiveIntegerField("Población (Normal)", default=0)
+    muestra_normal = models.PositiveIntegerField("Muestra (Normal)", default=0)
+    universo_reducido = models.PositiveIntegerField("Universo (Reducido)", default=0)
+    poblacion_reducido = models.PositiveIntegerField("Población (Reducido)", default=0)
+    muestra_reducido = models.PositiveIntegerField("Muestra (Reducido)", default=0)
 
     def __str__(self):
         return f"Acta Auditoría - {self.plan.programacion.cotizacion.numero_servicio}"
