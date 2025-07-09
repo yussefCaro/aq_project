@@ -8,7 +8,7 @@ import pdfkit
 from cotizaciones.models import Cotizacion
 from .forms import ProgramacionAuditoriaForm, FechaEtapa2Form, FechaEtapa2FormSet
 from .models import ProgramacionAuditoria, Auditor, FechaEtapa2
-from django.forms import modelformset_factory
+from django.forms import inlineformset_factory
 from django.contrib import messages
 
 
@@ -120,36 +120,37 @@ def imprimir_programacion(request, programacion_id):
     return response
 
 
+
+
 @login_required
 def programar_auditoria(request, cotizacion_id):
     cotizacion = get_object_or_404(Cotizacion, id=cotizacion_id)
     programacion, _ = ProgramacionAuditoria.objects.get_or_create(cotizacion=cotizacion)
 
-    FechaEtapa2FormSet = modelformset_factory(FechaEtapa2, form=FechaEtapa2Form, extra=1, max_num=3, can_delete=True)
+    FechaEtapa2FormSet = inlineformset_factory(
+        ProgramacionAuditoria, FechaEtapa2, form=FechaEtapa2Form, extra=0, max_num=3, can_delete=True
+    )
 
     if request.method == 'POST':
         form = ProgramacionAuditoriaForm(request.POST, instance=programacion)
-        fecha_formset = FechaEtapa2FormSet(request.POST, queryset=FechaEtapa2.objects.filter(programacion=programacion))
+        fecha_formset = FechaEtapa2FormSet(request.POST, instance=programacion)
+
+        print("POST:", request.POST)
+        print("Formset errors:", fecha_formset.errors)
+        print("Form errors:", form.errors)
 
         if form.is_valid() and fecha_formset.is_valid():
-            nivel_auditoria = form.cleaned_data.get('nivel_auditoria')
-            if not nivel_auditoria:
-                messages.error(request, 'Debe seleccionar un nivel de auditoría.')
-            elif nivel_auditoria == 'Nivel 3 con Formación de Instructores' and fecha_formset.total_form_count() > 3:
-                messages.error(request, 'No se pueden agregar más de 3 fechas para este nivel.')
-            else:
-                programacion = form.save()
-                for fecha in fecha_formset.save(commit=False):
-                    fecha.programacion = programacion
-                    fecha.save()
-                for fecha in fecha_formset.deleted_objects:
-                    fecha.delete()
+            programacion = form.save(commit=False)
+            programacion.cotizacion = cotizacion
+            programacion.save()
+            fecha_formset.instance = programacion
+            fecha_formset.save()
+            messages.success(request, 'Programación guardada correctamente.')
+            return redirect('listado_programaciones')
 
-                messages.success(request, 'Programación guardada correctamente.')
-                return redirect('listado_programaciones')
     else:
         form = ProgramacionAuditoriaForm(instance=programacion)
-        fecha_formset = FechaEtapa2FormSet(queryset=FechaEtapa2.objects.filter(programacion=programacion))
+        fecha_formset = FechaEtapa2FormSet(instance=programacion)
 
     return render(request, 'programacion/form_programacion.html', {
         'form': form,

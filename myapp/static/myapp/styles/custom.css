@@ -19,3 +19,13 @@
 
 .navbar { background: none !important; }
 .nav-link { color: inherit !important; }
+
+@media print {
+    .btn,
+    .float-end,
+    .no-print {
+        display: none !important;
+    }
+}
+
+

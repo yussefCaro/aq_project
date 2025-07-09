@@ -134,6 +134,7 @@ def project_detail(request, project_id):
 
     elif request.method == 'POST':
         form = CreateNewProject(request.POST, instance=project)
+
         if form.is_valid():
             form.save()
             return redirect('projects')  # Puedes agregar un mensaje de éxito con mensajes Django
