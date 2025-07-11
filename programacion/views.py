@@ -14,6 +14,8 @@ from django.contrib import messages
 from weasyprint import HTML
 from datetime import datetime
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 
 
@@ -67,14 +69,13 @@ def cambiar_estado(request, cotizacion_id):
 
 
 
-from programacion.models import ProgramacionAuditoria, Auditor
+
 
 @login_required
 def listado_programaciones(request):
-    """ Muestra la lista de programaciones de auditoría según el rol del usuario. """
     grupos_usuario = request.user.groups.values_list("name", flat=True)
 
-    # Si es auditor, solo ve sus programaciones
+    # Base queryset según el rol
     if "Auditores" in grupos_usuario:
         try:
             auditor = Auditor.objects.get(user=request.user)
@@ -84,18 +85,53 @@ def listado_programaciones(request):
             programaciones = ProgramacionAuditoria.objects.none()
             es_auditor = True
     else:
-        # Programador, comercial, admin, etc. ven todas
         programaciones = ProgramacionAuditoria.objects.select_related("cotizacion__solicitud__cliente").all()
         es_auditor = False
 
+    # Filtros dinámicos
+    nivel = request.GET.get('nivel')
+    auditor_id = request.GET.get('auditor')
+    estado = request.GET.get('estado')
+
+    if nivel:
+        programaciones = programaciones.filter(cotizacion__solicitud__cliente__nivel_cea=nivel)
+    if auditor_id:
+        programaciones = programaciones.filter(auditores__id=auditor_id)
+    if estado:
+        programaciones = programaciones.filter(estado=estado)
+
+    # Para los selects de filtros
+    niveles = ProgramacionAuditoria.objects.values_list('cotizacion__solicitud__cliente__nivel_cea', flat=True).distinct()
+    auditores = Auditor.objects.all()
+    estados = ProgramacionAuditoria.objects.values_list('estado', flat=True).distinct()
+
+    # Paginación
+    paginator = Paginator(programaciones, 10)  # 10 programaciones por página
+    page = request.GET.get('page')
+    try:
+        programaciones_page = paginator.page(page)
+    except PageNotAnInteger:
+        programaciones_page = paginator.page(1)
+    except EmptyPage:
+        programaciones_page = paginator.page(paginator.num_pages)
+
     contexto = {
-        "programaciones": programaciones,
+        "programaciones": programaciones_page,
+        "paginator": paginator,
+        "page_obj": programaciones_page,
+        "is_paginated": programaciones_page.has_other_pages(),
         "pertenece_comercial": "Comercial" in grupos_usuario,
         "pertenece_programacion": "Programación" in grupos_usuario,
         "es_auditor": es_auditor,
+        "niveles": niveles,
+        "auditores": auditores,
+        "estados": estados,
+        "nivel_selected": nivel,
+        "auditor_selected": auditor_id,
+        "estado_selected": estado,
     }
-
     return render(request, "programacion/listado_programaciones.html", contexto)
+
 
 
 @login_required
