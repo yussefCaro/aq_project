@@ -3,13 +3,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-import json
-import pdfkit
+
 from cotizaciones.models import Cotizacion
 from .forms import ProgramacionAuditoriaForm, FechaEtapa2Form, FechaEtapa2FormSet
 from .models import ProgramacionAuditoria, Auditor, FechaEtapa2
 from django.forms import inlineformset_factory
 from django.contrib import messages
+
+
+from weasyprint import HTML
+from datetime import datetime
+
 
 
 
@@ -63,58 +67,54 @@ def cambiar_estado(request, cotizacion_id):
 
 
 
+from programacion.models import ProgramacionAuditoria, Auditor
+
 @login_required
 def listado_programaciones(request):
-    """ Muestra la lista de programaciones de auditoría. """
-    programaciones = ProgramacionAuditoria.objects.select_related("cotizacion__solicitud__cliente").all()
-
-
-
-    # Obtener los grupos del usuario
+    """ Muestra la lista de programaciones de auditoría según el rol del usuario. """
     grupos_usuario = request.user.groups.values_list("name", flat=True)
+
+    # Si es auditor, solo ve sus programaciones
+    if "Auditores" in grupos_usuario:
+        try:
+            auditor = Auditor.objects.get(user=request.user)
+            programaciones = ProgramacionAuditoria.objects.filter(auditores=auditor)
+            es_auditor = True
+        except Auditor.DoesNotExist:
+            programaciones = ProgramacionAuditoria.objects.none()
+            es_auditor = True
+    else:
+        # Programador, comercial, admin, etc. ven todas
+        programaciones = ProgramacionAuditoria.objects.select_related("cotizacion__solicitud__cliente").all()
+        es_auditor = False
 
     contexto = {
         "programaciones": programaciones,
         "pertenece_comercial": "Comercial" in grupos_usuario,
-        "pertenece_programacion": "Programación" in grupos_usuario,  # Asegúrate de que el nombre del grupo es correcto
+        "pertenece_programacion": "Programación" in grupos_usuario,
+        "es_auditor": es_auditor,
     }
 
     return render(request, "programacion/listado_programaciones.html", contexto)
 
+
 @login_required
 def imprimir_programacion(request, programacion_id):
-    """ Genera un PDF con la programación de auditoría. """
     programacion = get_object_or_404(ProgramacionAuditoria, id=programacion_id)
-
-    # ⚠️ Imprimir en la consola los tipos de servicio asociados
-    tipos_servicio = programacion.cotizacion.tipo_servicio.all()
-    print("Tipos de servicio:", list(tipos_servicio))  # Esto debe mostrar algo en la consola
-
-    # ✅ Obtener todas las fechas de etapa 2 relacionadas
     fechas_etapa2 = FechaEtapa2.objects.filter(programacion=programacion)
+    usuario = request.user
 
-    # Renderizar la plantilla
-    html = render_to_string(
-        "programacion/imprimir.html",
-        {
-            "programacion": programacion,
-            "fechas_etapa2": fechas_etapa2,
-        },
-    )
-
-    # Opciones de pdfkit
-    options = {
-        "page-size": "Letter",
-        "encoding": "UTF-8",
+    # Puedes pasar más variables al contexto si lo necesitas
+    context = {
+        "programacion": programacion,
+        "fechas_etapa2": fechas_etapa2,
+        "fecha_hoy": datetime.now().strftime("%d/%m/%Y"),  # Si quieres mostrar la fecha actual
+        "programador_nombre": usuario.get_full_name() or usuario.username,
     }
 
-    # Configurar wkhtmltopdf
-    config = pdfkit.configuration(wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe")
+    html = render_to_string("programacion/imprimir.html", context)
+    pdf = HTML(string=html, base_url=request.build_absolute_uri('/')).write_pdf()
 
-    # Generar PDF
-    pdf = pdfkit.from_string(html, False, options=options, configuration=config)
-
-    # Respuesta con PDF
     response = HttpResponse(pdf, content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="programacion.pdf"'
     return response
@@ -159,3 +159,13 @@ def programar_auditoria(request, cotizacion_id):
         'titulo': 'Programar Auditoría',
         'boton_texto': 'Guardar Programación'
     })
+
+
+
+
+@login_required
+def eliminar_programacion(request, programacion_id):
+    programacion = get_object_or_404(ProgramacionAuditoria, id=programacion_id)
+    programacion.delete()
+    return redirect('listado_programaciones')
+
