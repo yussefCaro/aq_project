@@ -11,6 +11,8 @@ from .models import Cliente, Solicitud
 from .forms import ClienteForm, SolicitudForm
 
 from weasyprint import HTML
+from django.contrib.staticfiles import finders
+
 
 
 # --- Formulario de solicitud por NIT ---
@@ -87,7 +89,8 @@ def generar_solicitud_pdf(request, cliente_id):
         certificacion_ente = "No aplica"
 
     # 3. Ruta absoluta del logo para WeasyPrint
-    logo_path = os.path.join(settings.STATIC_ROOT, 'myapp', 'AQ_color.png')
+    logo_path = finders.find('myapp/AQ_color.png')
+    print("LOGO PATH:", logo_path)
 
     # 4. Renderizar el template HTML
     html_string = render_to_string('solicitudes/solicitud_pdf.html', {
